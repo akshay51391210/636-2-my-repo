@@ -1,3 +1,4 @@
+// frontend/src/pages/Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
@@ -15,37 +16,37 @@ export default function Login() {
   const onChange = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const submit = async (e) => {
-  e.preventDefault();
-  setErrorMsg('');
-  setLoading(true);
-  try {
-    // login → call /api/auth/login
-    const res = await api.post('/api/auth/login', form);
-    if (res.data?.token) {
-      setToken(res.data.token);
+    e.preventDefault();
+    setErrorMsg('');
+    setLoading(true);
+    try {
+      // ✅ อย่าใส่ /api ซ้ำ — baseURL มี /api อยู่แล้ว
+      const res = await api.post('/auth/login', form);
 
-      // get profile
-      let me;
-      try {
-        me = await api.get('/api/auth/me');
-      } catch {
-        me = await api.get('/api/auth/profile');
+      if (res.data?.token) {
+        setToken(res.data.token);
+
+        // ดึงโปรไฟล์ผู้ใช้
+        let me;
+        try {
+          me = await api.get('/auth/me');
+        } catch {
+          me = await api.get('/auth/profile');
+        }
+        login(me.data);
+
+        nav('/dashboard');
+      } else {
+        setErrorMsg('Login response missing token');
       }
-      login(me.data);
-
-      // Dashboard
-      nav('/dashboard');
-    } else {
-      setErrorMsg('Login response missing token');
+    } catch (err) {
+      const status = err?.response?.status;
+      if (status === 401) setErrorMsg('Invalid email or password');
+      else setErrorMsg(err?.response?.data?.message || 'Error during login');
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    const status = err?.response?.status;
-    if (status === 401) setErrorMsg('Invalid email or password');
-    else setErrorMsg(err?.response?.data?.message || 'Error during login');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="container-page" style={{ maxWidth: 420 }}>
@@ -64,7 +65,7 @@ export default function Login() {
             </div>
             <div className="sm:col-span-2">
               <label>Password</label>
-              <input className="input" type="password" value={form.password} onChange={onChange('password')} required disabled={loading} />
+              <input className="input" type="password" value={form.password} onChange={onChange('password')} required disabled={loading} autoComplete="current-password" />
             </div>
             <div className="form-actions sm:col-span-2">
               <button type="submit" className="btn btn-primary" disabled={loading}>
