@@ -31,7 +31,17 @@ export default function Profile() {
     (async () => {
       setError('');
       try {
-        const res = await api.get('/api/auth/profile');
+        let res;
+        try {
+          res = await api.get('/auth/profile');
+        } catch (e) {
+          if (e?.response?.status === 404) {
+            res = await api.get('/auth/me');
+          } else {
+            throw e;
+          }
+        }
+
         const data = res.data || {};
         setForm({
           name: data.name || '',
@@ -65,8 +75,18 @@ export default function Profile() {
         university: form.university,
         address: form.address
       };
-      if (form.password) payload.password = form.password; // ส่งเมื่อมีการเปลี่ยน
-      await api.put('/api/auth/profile', payload);
+      if (form.password) payload.password = form.password;
+
+      try {
+        await api.put('/auth/profile', payload);
+      } catch (e) {
+        if (e?.response?.status === 404) {
+          await api.put('/auth/me', payload);
+        } else {
+          throw e;
+        }
+      }
+
       alert('Profile updated successfully!');
       setForm((f) => ({ ...f, password: '' }));
     } catch (err) {
@@ -122,10 +142,7 @@ export default function Profile() {
 
       {/* Error panel */}
       {error && (
-        <div
-          className="card"
-          style={{ marginBottom: 16, borderColor: '#fecaca', background: '#fff1f2' }}
-        >
+        <div className="card" style={{ marginBottom: 16, borderColor: '#fecaca', background: '#fff1f2' }}>
           <div className="card-body" style={{ color: '#991b1b' }}>
             {error}
           </div>
@@ -144,8 +161,9 @@ export default function Profile() {
                 value={form.name}
                 onChange={onChange('name')}
                 required
-                disabled={saving}
                 placeholder="Your name"
+                autoComplete="name"
+                disabled={saving}
               />
             </div>
 
@@ -157,8 +175,9 @@ export default function Profile() {
                 value={form.email}
                 onChange={onChange('email')}
                 required
-                disabled={saving}
                 placeholder="you@example.com"
+                autoComplete="email"
+                disabled={saving}
               />
             </div>
 
@@ -168,8 +187,9 @@ export default function Profile() {
                 className="input"
                 value={form.university}
                 onChange={onChange('university')}
-                disabled={saving}
                 placeholder="e.g., QUT"
+                autoComplete="organization"
+                disabled={saving}
               />
             </div>
 
@@ -179,8 +199,9 @@ export default function Profile() {
                 className="input"
                 value={form.address}
                 onChange={onChange('address')}
-                disabled={saving}
                 placeholder="Street, City"
+                autoComplete="street-address"
+                disabled={saving}
               />
             </div>
 
@@ -191,8 +212,9 @@ export default function Profile() {
                 type="password"
                 value={form.password}
                 onChange={onChange('password')}
-                disabled={saving}
                 placeholder="Leave blank to keep existing"
+                autoComplete="current-password"
+                disabled={saving}
               />
             </div>
 
