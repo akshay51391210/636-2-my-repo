@@ -20,13 +20,13 @@ export default function Login() {
     setErrorMsg('');
     setLoading(true);
     try {
-      // ✅ อย่าใส่ /api ซ้ำ — baseURL มี /api อยู่แล้ว
+    
       const res = await api.post('/auth/login', form);
 
       if (res.data?.token) {
         setToken(res.data.token);
 
-        // ดึงโปรไฟล์ผู้ใช้
+        // Call profile
         let me;
         try {
           me = await api.get('/auth/me');

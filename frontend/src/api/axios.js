@@ -2,7 +2,6 @@
 import axios from 'axios';
 
 function resolveBaseURL() {
-  // ใช้ค่าจาก .env ถ้ามี
   const fromEnv = process.env.REACT_APP_API_URL?.trim();
   if (fromEnv) return fromEnv.replace(/\/+$/, '');
 
@@ -12,7 +11,6 @@ function resolveBaseURL() {
     return 'http://localhost:5001/api';
   }
 
-  // เสิร์ฟ FE ผ่าน BE (same-origin)
   if (typeof window !== 'undefined') return `${window.location.origin}/api`;
 
   return 'http://localhost:5001/api';
@@ -21,7 +19,7 @@ function resolveBaseURL() {
 const api = axios.create({
   baseURL: resolveBaseURL(),
   headers: { 'Content-Type': 'application/json' },
-  // เราใช้ Bearer token (localStorage) ไม่ใช้คุกกี้ → ปิด credentials
+  
   withCredentials: false,
 });
 
