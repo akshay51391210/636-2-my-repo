@@ -4,9 +4,7 @@ import { format, startOfDay, endOfDay } from "date-fns";
 const uid = () => String(Date.now()) + Math.random().toString(36).slice(2);
 const LS_KEY = "vet_records";
 
-// helper: Date -> 'yyyy-MM-dd'
-const toISO = (d) => (d ? format(d, "yyyy-MM-dd") : "");
-
+// seed data
 const seedRows = [
   { id: uid(), date: "2025-09-13", name: "Tommy", owner: "Alice", phone: "089-111-2222", type: "Cat", diagnosis: "Reason 1", plan: "-", status: "Completed" },
   { id: uid(), date: "2025-09-14", name: "Devid", owner: "Bob", phone: "089-333-4444", type: "Dog", diagnosis: "Reason 2", plan: "-", status: "Completed" },
@@ -119,7 +117,6 @@ export default function VetDashboard() {
                     setFromDate(val ? new Date(val) : null);
                   }}
                 />
-                
               </div>
             </div>
 
@@ -137,7 +134,6 @@ export default function VetDashboard() {
                     setToDate(val ? new Date(val) : null);
                   }}
                 />
-                
               </div>
             </div>
 
