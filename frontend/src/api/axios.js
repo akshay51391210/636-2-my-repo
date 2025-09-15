@@ -1,0 +1,37 @@
+// frontend/src/api/axios.js
+import axios from 'axios';
+
+function resolveBaseURL() {
+  const fromEnv = process.env.REACT_APP_API_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/+$/, '');
+
+  // dev local
+  if (typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:5001/api';
+  }
+
+  if (typeof window !== 'undefined') return `${window.location.origin}/api`;
+
+  return 'http://localhost:5001/api';
+}
+
+const api = axios.create({
+  baseURL: resolveBaseURL(),
+  headers: { 'Content-Type': 'application/json' },
+  
+  withCredentials: false,
+});
+
+api.interceptors.request.use((config) => {
+  const t = localStorage.getItem('token');
+  if (t) config.headers.Authorization = `Bearer ${t}`;
+  return config;
+});
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => Promise.reject(err)
+);
+
+export default api;
