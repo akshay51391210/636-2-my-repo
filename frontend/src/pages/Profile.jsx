@@ -1,4 +1,3 @@
-// frontend/src/pages/Profile.jsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
@@ -105,10 +104,20 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="container-page" style={{ maxWidth: 760 }}>
-        <div className="card">
-          <div className="card-body">
-            <p className="helper">Loading profile...</p>
+      <div className="min-h-screen relative"
+        style={{
+          backgroundImage: "url('/bg3.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "cover",
+          backgroundColor: "rgba(255,255,255,0.90)",
+          backgroundBlendMode: "lighten"
+        }}
+      >
+        <div className="container-page" style={{ maxWidth: 760 }}>
+          <div className="card" style={{ backgroundColor: '#a5b4fc' }}>
+            <div className="card-body">
+              <p className="helper">Loading profile...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -116,117 +125,130 @@ export default function Profile() {
   }
 
   return (
-    <div className="container-page" style={{ maxWidth: 760 }}>
-      {/* Header card */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div className="card-body" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div
-            style={{
-              width: 64, height: 64, borderRadius: 16,
-              background: '#eef2ff', color: '#3730a3',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 800, fontSize: 20
-            }}
-          >
-            {initials}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 20, fontWeight: 800 }}>{form.name || '—'}</div>
-            <div className="helper">{form.email || '—'}</div>
-          </div>
-          <div className="form-actions">
-            <button type="button" className="btn btn-secondary" onClick={logout}>Log out</button>
+    <div
+      className="min-h-screen relative"
+      style={{
+        backgroundImage: "url('/bg3.png')",
+        backgroundRepeat: "repeat",
+        backgroundSize: "cover",
+        backgroundColor: "rgba(255,255,255,0.90)",
+        backgroundBlendMode: "lighten"
+      }}
+    >
+      <div className="container-page" style={{ maxWidth: 760 }}>
+        {/* Header card */}
+        <div className="card" style={{ marginBottom: 16, backgroundColor: '#a5b4fc' }}>
+          <div className="card-body" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div
+              style={{
+                width: 64, height: 64, borderRadius: 16,
+                background: '#c7d2fe', color: '#3730a3',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 800, fontSize: 20
+              }}
+            >
+              {initials}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 20, fontWeight: 800 }}>{form.name || '—'}</div>
+              <div className="helper">{form.email || '—'}</div>
+            </div>
+            <div className="form-actions">
+              <button type="button" className="btn btn-secondary" onClick={logout}>Log out</button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Error panel */}
-      {error && (
-        <div className="card" style={{ marginBottom: 16, borderColor: '#fecaca', background: '#fff1f2' }}>
-          <div className="card-body" style={{ color: '#991b1b' }}>
-            {error}
+        {/* Error panel */}
+        {error && (
+          <div className="card" style={{ marginBottom: 16, backgroundColor: '#fecaca', borderColor: '#fecaca' }}>
+            <div className="card-body" style={{ color: '#991b1b' }}>
+              {error}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Edit form */}
-      <div className="card">
-        <div className="card-header">Profile details</div>
-        <div className="card-body">
-          <form className="form-grid" onSubmit={onSubmit}>
-            <div>
-              <label>Name</label>
-              <input
-                className="input"
-                value={form.name}
-                onChange={onChange('name')}
-                required
-                placeholder="Your name"
-                autoComplete="name"
-                disabled={saving}
-              />
-            </div>
+        {/* Edit form */}
+        <div className="card" style={{ backgroundColor: '#ede9fe' }}>
+          <div className="card-header" style={{ backgroundColor: '#a5b4fc', fontWeight: 600 }}>
+            Profile details
+          </div>
+          <div className="card-body">
+            <form className="form-grid" onSubmit={onSubmit}>
+              <div>
+                <label>Name</label>
+                <input
+                  className="input"
+                  value={form.name}
+                  onChange={onChange('name')}
+                  required
+                  placeholder="Your name"
+                  autoComplete="name"
+                  disabled={saving}
+                />
+              </div>
 
-            <div>
-              <label>Email</label>
-              <input
-                className="input"
-                type="email"
-                value={form.email}
-                onChange={onChange('email')}
-                required
-                placeholder="you@example.com"
-                autoComplete="email"
-                disabled={saving}
-              />
-            </div>
+              <div>
+                <label>Email</label>
+                <input
+                  className="input"
+                  type="email"
+                  value={form.email}
+                  onChange={onChange('email')}
+                  required
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  disabled={saving}
+                />
+              </div>
 
-            <div>
-              <label>University (optional)</label>
-              <input
-                className="input"
-                value={form.university}
-                onChange={onChange('university')}
-                placeholder="e.g., QUT"
-                autoComplete="organization"
-                disabled={saving}
-              />
-            </div>
+              <div>
+                <label>University (optional)</label>
+                <input
+                  className="input"
+                  value={form.university}
+                  onChange={onChange('university')}
+                  placeholder="e.g., QUT"
+                  autoComplete="organization"
+                  disabled={saving}
+                />
+              </div>
 
-            <div>
-              <label>Address (optional)</label>
-              <input
-                className="input"
-                value={form.address}
-                onChange={onChange('address')}
-                placeholder="Street, City"
-                autoComplete="street-address"
-                disabled={saving}
-              />
-            </div>
+              <div>
+                <label>Address (optional)</label>
+                <input
+                  className="input"
+                  value={form.address}
+                  onChange={onChange('address')}
+                  placeholder="Street, City"
+                  autoComplete="street-address"
+                  disabled={saving}
+                />
+              </div>
 
-            <div className="sm:col-span-2">
-              <label>New password (optional)</label>
-              <input
-                className="input"
-                type="password"
-                value={form.password}
-                onChange={onChange('password')}
-                placeholder="Leave blank to keep existing"
-                autoComplete="current-password"
-                disabled={saving}
-              />
-            </div>
+              <div className="sm:col-span-2">
+                <label>New password (optional)</label>
+                <input
+                  className="input"
+                  type="password"
+                  value={form.password}
+                  onChange={onChange('password')}
+                  placeholder="Leave blank to keep existing"
+                  autoComplete="current-password"
+                  disabled={saving}
+                />
+              </div>
 
-            <div className="form-actions sm:col-span-2">
-              <button type="submit" className="btn btn-primary" disabled={saving}>
-                {saving ? 'Saving…' : 'Save changes'}
-              </button>
-              <button type="button" className="btn btn-secondary" onClick={() => setForm({ ...form, password: '' })} disabled={saving}>
-                Clear password
-              </button>
-            </div>
-          </form>
+              <div className="form-actions sm:col-span-2">
+                <button type="submit" className="btn btn-primary" disabled={saving}>
+                  {saving ? 'Saving…' : 'Save changes'}
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={() => setForm({ ...form, password: '' })} disabled={saving}>
+                  Clear password
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

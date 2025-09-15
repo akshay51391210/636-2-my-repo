@@ -10,6 +10,9 @@ import AppointmentPage from './pages/AppointmentPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import HistoryPage from './pages/HistoryPage';
+import AdminInvoice from './pages/AdminInvoice';
+import AdminPrescription from "./pages/AdminPrescription";
+import VetDashboard from './pages/VetDashboard';
 
 function App() {
   return (
@@ -22,6 +25,9 @@ function App() {
         <Route path="/pets" element={<PetPage />} />
         <Route path="/owners" element={<OwnerPage />} />
         <Route path="/appointments" element={<AppointmentPage />} />
+        <Route path="/admin-invoice" element={<AdminInvoice />} />
+        <Route path="/admin-prescription" element={<AdminPrescription />} />
+        <Route path="/vet-dashboard" element={<VetDashboard />} />
 
         {/* Protect History */}
         <Route
