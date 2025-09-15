@@ -1,3 +1,4 @@
+// frontend/src/pages/HistoryPage.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
@@ -105,251 +106,293 @@ export default function HistoryPage() {
   }, [page]);
 
   return (
-    <div className="container-page">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">History</h1>
-        <p className="text-slate-600">Search by owner name / Phone / Pet name</p>
-      </div>
+    <div
+      className="min-h-screen relative"
+      style={{
+        backgroundImage: "url('/bg4.png')",
+        backgroundRepeat: 'repeat',
+        backgroundSize: 'cover',
+      }}
+    >
+      {/* Semi-transparent overlay (only affects background) */}
+      <div className="absolute inset-0 bg-white" style={{ opacity: 0.9 }} aria-hidden="true" />
 
-      {/* Search Form */}
-      <div className="card mb-6">
-        <div className="card-body">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* text query */}
-            <div>
-              <label className="text-sm text-slate-600">Search (Owner / Phone / Pet)</label>
-              <input
-                className="input mt-1"
-                placeholder="e.g. John / 089xxx / Milo"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+      {/* Original page content (UNCHANGED) */}
+      <div className="relative z-10">
+        <div className="container-page">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-slate-900">History</h1>
+            <p className="text-slate-600">Search by owner name / Phone / Pet name</p>
+          </div>
+
+          {/* Search Form — only color enhanced */}
+          <div
+            className="card mb-6 border rounded-xl"
+            style={{
+              // Card background and border per request
+              backgroundColor: '#a5b4fc',
+              borderColor: '#8ea0ff',
+            }}
+          >
+            <div className="card-body">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* text query */}
+                <div>
+                  {/* Make label darker for readability on the lavender background */}
+                  <label className="text-sm font-medium text-slate-800">
+                    Search (Owner / Phone / Pet)
+                  </label>
+                  <input
+                    className="input mt-1"
+                    placeholder="e.g. John / 089xxx / Milo"
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setPage(1);
+                        search({ page: 1 });
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* status */}
+                <div>
+                  <label className="text-sm font-medium text-slate-800">Status</label>
+                  <select
+                    className="select mt-1"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                  >
+                    <option value="">Total</option>
+                    <option value="scheduled">scheduled</option>
+                    <option value="completed">completed</option>
+                    <option value="cancelled">cancelled</option>
+                  </select>
+                </div>
+
+                {/* from date */}
+                <div>
+                  <label className="text-sm font-medium text-slate-800">From date</label>
+                  <div className="relative mt-1">
+                    <input
+                      className="input w-full pr-10"
+                      type="text"
+                      placeholder="dd/mm/yyyy"
+                      value={fromDmy}
+                      onChange={(e) => setFromDmy(formatDmyMask(e.target.value))}
+                      onBlur={() => !dmyToIso(fromDmy) && setFromDmy('')}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-700"
+                      onClick={() => {
+                        const el = fromNativeRef.current;
+                        if (!el) return;
+                        if (el.showPicker) el.showPicker();
+                        else el.click();
+                      }}
+                      title="Pick date"
+                    >
+                      📅
+                    </button>
+                    {/* invisible native date picker to ensure real calendar popup */}
+                    <input
+                      ref={fromNativeRef}
+                      type="date"
+                      style={{
+                        position: 'absolute',
+                        width: 1,
+                        height: 1,
+                        padding: 0,
+                        margin: -1,
+                        overflow: 'hidden',
+                        clip: 'rect(0,0,0,0)',
+                        whiteSpace: 'nowrap',
+                        border: 0,
+                      }}
+                      onChange={(e) => {
+                        const iso = e.target.value;
+                        setFromDmy(iso ? isoToDmy(iso) : '');
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* to date */}
+                <div>
+                  <label className="text-sm font-medium text-slate-800">To date</label>
+                  <div className="relative mt-1">
+                    <input
+                      className="input w-full pr-10"
+                      type="text"
+                      placeholder="dd/mm/yyyy"
+                      value={toDmy}
+                      onChange={(e) => setToDmy(formatDmyMask(e.target.value))}
+                      onBlur={() => !dmyToIso(toDmy) && setToDmy('')}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-700"
+                      onClick={() => {
+                        const el = toNativeRef.current;
+                        if (!el) return;
+                        if (el.showPicker) el.showPicker();
+                        else el.click();
+                      }}
+                      title="Pick date"
+                    >
+                      📅
+                    </button>
+                    <input
+                      ref={toNativeRef}
+                      type="date"
+                      style={{
+                        position: 'absolute',
+                        width: 1,
+                        height: 1,
+                        padding: 0,
+                        margin: -1,
+                        overflow: 'hidden',
+                        clip: 'rect(0,0,0,0)',
+                        whiteSpace: 'nowrap',
+                        border: 0,
+                      }}
+                      onChange={(e) => {
+                        const iso = e.target.value;
+                        setToDmy(iso ? isoToDmy(iso) : '');
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {/* Search button in F3F58B as requested */}
+                <button
+                  className="btn text-slate-900"
+                  style={{ backgroundColor: '#F3F58B' }}
+                  onClick={() => {
                     setPage(1);
                     search({ page: 1 });
-                  }
-                }}
-              />
-            </div>
-
-            {/* status */}
-            <div>
-              <label className="text-sm text-slate-600">Status</label>
-              <select
-                className="select mt-1"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="">Total</option>
-                <option value="scheduled">scheduled</option>
-                <option value="completed">completed</option>
-                <option value="cancelled">cancelled</option>
-              </select>
-            </div>
-
-            {/* from date */}
-            <div>
-              <label className="text-sm text-slate-600">From date</label>
-              <div className="relative mt-1">
-                <input
-                  className="input w-full pr-10"
-                  type="text"
-                  placeholder="dd/mm/yyyy"
-                  value={fromDmy}
-                  onChange={(e) => setFromDmy(formatDmyMask(e.target.value))}
-                  onBlur={() => !dmyToIso(fromDmy) && setFromDmy('')}
-                />
-                <button
-                  type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500"
-                  onClick={() => {
-                    const el = fromNativeRef.current;
-                    if (!el) return;
-                    if (el.showPicker) el.showPicker();
-                    else el.click();
                   }}
+                  disabled={loading}
                 >
-                  📅
+                  Search
                 </button>
-                <input
-                  ref={fromNativeRef}
-                  type="date"
-                  style={{
-                    position: 'absolute',
-                    width: 1,
-                    height: 1,
-                    padding: 0,
-                    margin: -1,
-                    overflow: 'hidden',
-                    clip: 'rect(0,0,0,0)',
-                    whiteSpace: 'nowrap',
-                    border: 0
-                  }}
-                  onChange={(e) => {
-                    const iso = e.target.value;
-                    setFromDmy(iso ? isoToDmy(iso) : '');
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* to date */}
-            <div>
-              <label className="text-sm text-slate-600">To date</label>
-              <div className="relative mt-1">
-                <input
-                  className="input w-full pr-10"
-                  type="text"
-                  placeholder="dd/mm/yyyy"
-                  value={toDmy}
-                  onChange={(e) => setToDmy(formatDmyMask(e.target.value))}
-                  onBlur={() => !dmyToIso(toDmy) && setToDmy('')}
-                />
                 <button
-                  type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500"
+                  className="btn btn-secondary"
                   onClick={() => {
-                    const el = toNativeRef.current;
-                    if (!el) return;
-                    if (el.showPicker) el.showPicker();
-                    else el.click();
+                    setQ('');
+                    setStatus('');
+                    const today = new Date();
+                    const start = new Date();
+                    start.setDate(today.getDate() - 29);
+                    setFromDmy(isoToDmy(start.toISOString().slice(0, 10)));
+                    setToDmy(isoToDmy(today.toISOString().slice(0, 10)));
+                    setPage(1);
+                    search({ page: 1, q: '', status: '' });
                   }}
+                  disabled={loading}
                 >
-                  📅
+                  Reset
                 </button>
-                <input
-                  ref={toNativeRef}
-                  type="date"
-                  style={{
-                    position: 'absolute',
-                    width: 1,
-                    height: 1,
-                    padding: 0,
-                    margin: -1,
-                    overflow: 'hidden',
-                    clip: 'rect(0,0,0,0)',
-                    whiteSpace: 'nowrap',
-                    border: 0
-                  }}
-                  onChange={(e) => {
-                    const iso = e.target.value;
-                    setToDmy(iso ? isoToDmy(iso) : '');
-                  }}
-                />
               </div>
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                setPage(1);
-                search({ page: 1 });
-              }}
-              disabled={loading}
-            >
-              Search
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => {
-                setQ('');
-                setStatus('');
-                const today = new Date();
-                const start = new Date();
-                start.setDate(today.getDate() - 29);
-                setFromDmy(isoToDmy(start.toISOString().slice(0, 10)));
-                setToDmy(isoToDmy(today.toISOString().slice(0, 10)));
-                setPage(1);
-                search({ page: 1, q: '', status: '' });
-              }}
-              disabled={loading}
-            >
-              Reset
-            </button>
-          </div>
-        </div>
-      </div>
+          {/* Results — only table colors changed */}
+          <div className="bg-white rounded-xl shadow border border-slate-200">
+            <div className="p-5 border-b border-slate-200 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Result ({total.toLocaleString()} List)
+              </h2>
+              <div className="flex gap-2">
+                <button
+                  className="btn"
+                  disabled={page <= 1 || loading}
+                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                >
+                  ‹ Previous
+                </button>
+                <button
+                  className="btn"
+                  disabled={!hasMore || loading}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next ›
+                </button>
+              </div>
+            </div>
 
-      {/* Results */}
-      <div className="bg-white rounded-xl shadow border border-slate-200">
-        <div className="p-5 border-b border-slate-200 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">
-            Result ({total.toLocaleString()} List)
-          </h2>
-          <div className="flex gap-2">
-            <button
-              className="btn"
-              disabled={page <= 1 || loading}
-              onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            >
-              ‹ Previous
-            </button>
-            <button
-              className="btn"
-              disabled={!hasMore || loading}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next ›
-            </button>
+            <div className="p-5 overflow-x-auto">
+              {loading ? (
+                <div className="text-center text-slate-500">Searching...</div>
+              ) : rows.length === 0 ? (
+                <div className="text-center text-slate-500">No data</div>
+              ) : (
+                <table className="min-w-[900px] w-full border-collapse">
+                  <thead>
+                    {/* Table header in #a5b4fc */}
+                    <tr style={{ backgroundColor: '#a5b4fc', color: '#1f2937' }}>
+                      <th className="px-4 py-2 text-left">Date</th>
+                      <th className="px-4 py-2 text-left">Time</th>
+                      <th className="px-4 py-2 text-left">Pet</th>
+                      <th className="px-4 py-2 text-left">Owner</th>
+                      <th className="px-4 py-2 text-left">Phone</th>
+                      <th className="px-4 py-2 text-left">Status</th>
+                      <th className="px-4 py-2 text-left">Reason</th>
+                      <th className="px-4 py-2 text-left">Link</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r, i) => (
+                      <tr
+                        key={r._id}
+                        className="border-t border-slate-200"
+                        // Alternate row shades using rgba of #a5b4fc for readability
+                        style={{
+                          backgroundColor:
+                            i % 2 === 0
+                              ? 'rgba(165,180,252,0.25)'
+                              : 'rgba(165,180,252,0.45)',
+                        }}
+                      >
+                        <td className="px-4 py-2">{isoToDmy(r.date) || r.date}</td>
+                        <td className="px-4 py-2">{r.time}</td>
+                        <td className="px-4 py-2">{r.petId?.name || '—'}</td>
+                        <td className="px-4 py-2">{r.ownerId?.name || '—'}</td>
+                        <td className="px-4 py-2">{r.ownerId?.phone || '—'}</td>
+                        <td className="px-4 py-2">
+                          <span
+                            className={`badge ${
+                              r.status === 'scheduled'
+                                ? 'badge-yellow'
+                                : r.status === 'completed'
+                                ? 'badge-green'
+                                : 'badge-red'
+                            }`}
+                          >
+                            {r.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2">{r.reason || '—'}</td>
+                        <td className="px-4 py-2">
+                          <button
+                            className="btn btn-ghost"
+                            onClick={() => navigate('/appointments')}
+                          >
+                            Open in Appointments
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="p-5 overflow-x-auto">
-          {loading ? (
-            <div className="text-center text-slate-500">Searching...</div>
-          ) : rows.length === 0 ? (
-            <div className="text-center text-slate-500">No data</div>
-          ) : (
-            <table className="min-w-[900px] w-full border-collapse">
-              <thead>
-                <tr className="bg-slate-100 text-left text-slate-700 text-sm">
-                  <th className="px-4 py-2">Date</th>
-                  <th className="px-4 py-2">Time</th>
-                  <th className="px-4 py-2">Pet</th>
-                  <th className="px-4 py-2">Owner</th>
-                  <th className="px-4 py-2">Phone</th>
-                  <th className="px-4 py-2">Status</th>
-                  <th className="px-4 py-2">Reason</th>
-                  <th className="px-4 py-2">Link</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r._id} className="border-t border-slate-200">
-                    <td className="px-4 py-2">{isoToDmy(r.date) || r.date}</td>
-                    <td className="px-4 py-2">{r.time}</td>
-                    <td className="px-4 py-2">{r.petId?.name || '—'}</td>
-                    <td className="px-4 py-2">{r.ownerId?.name || '—'}</td>
-                    <td className="px-4 py-2">{r.ownerId?.phone || '—'}</td>
-                    <td className="px-4 py-2">
-                      <span
-                        className={`badge ${
-                          r.status === 'scheduled'
-                            ? 'badge-yellow'
-                            : r.status === 'completed'
-                            ? 'badge-green'
-                            : 'badge-red'
-                        }`}
-                      >
-                        {r.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2">{r.reason || '—'}</td>
-                    <td className="px-4 py-2">
-                      <button
-                        className="btn btn-ghost"
-                        onClick={() => navigate('/appointments')}
-                      >
-                        Open in Appointments
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
         </div>
       </div>
     </div>

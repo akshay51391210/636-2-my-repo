@@ -180,192 +180,252 @@ export default function AppointmentPage() {
   };
 
   return (
-    <div className="container-page">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Appointments</h1>
-        <p className="text-slate-600">Book, edit, cancel appointments.</p>
-      </div>
+    <div
+      className="min-h-screen relative"
+      style={{
+        backgroundImage: "url('/paws2.png')",
+        backgroundRepeat: 'repeat',
+        backgroundSize: 'cover',     // full screen cover
+      }}
+    >
+      <div
+        className="absolute inset-0 bg-white"
+        style={{ opacity: 0.90 }}
+        aria-hidden="true"
+      />
 
-      {errors.length > 0 && (
-        <div className="card mb-4">
-          <div className="card-body">
-            <ul className="list-disc ml-5 text-rose-700">
-              {errors.map((er, i) => <li key={i}>{er}</li>)}
-            </ul>
+      <div className="relative z-10">
+        <div className="container-page">
+          {/* palette-only overrides for this page */}
+          <style>{`
+            /* ---------- Card (form) : purple highlight ---------- */
+            .card.card-purple,
+            .card.card-purple .card-body {
+              background: #a5b4fc;
+              border: 1px solid #8ea0ff;
+              border-radius: 16px;
+            }
+            .card.card-purple .card-title,
+            .card.card-purple label {
+              color: #111827; /* darker text for readability */
+            }
+
+            /* ---------- Table : soft-purple theme ---------- */
+            .table-soft-purple thead th {
+              background: #a5b4fc;
+              color: #111827;
+              border-color: #c9d0ff;
+            }
+            .table-soft-purple tbody td,
+            .table-soft-purple thead th {
+              border-color: #c9d0ff;
+            }
+            .table-soft-purple tbody tr:nth-child(odd)  { background: #eef1ff; }
+            .table-soft-purple tbody tr:nth-child(even) { background: #dde3ff; }
+
+            /* ---------- Buttons ---------- */
+            .btn-yellow {
+              background: #F3F58B;
+              color: #111827;
+            }
+            .btn-yellow:hover { filter: brightness(0.95); }
+
+            /* Make sure success is clearly green */
+            .btn-success {
+              background: #22c55e;
+              color: #fff;
+            }
+            .btn-success:hover { filter: brightness(0.95); }
+          `}</style>
+
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-slate-900">Appointments</h1>
+            <p className="text-slate-600">Book, edit, cancel appointments.</p>
           </div>
-        </div>
-      )}
 
-      <div className="card mb-6">
-        <div className="card-body">
-          <div className="card-title">{editingId ? 'Edit appointment' : 'New appointment'}</div>
-
-          <form onSubmit={handleSubmit} className="form-grid">
-            {/* Owner */}
-            <div>
-              <label className="text-sm text-slate-600">Owner</label>
-              <select
-                className="select mt-1"
-                value={formData.ownerId}
-                onChange={(e) => setFormData({ ...formData, ownerId: e.target.value, petId: '' })}
-              >
-                <option value="">Select owner</option>
-                {owners.map((o) => <option key={o._id} value={o._id}>{o.name}</option>)}
-              </select>
-            </div>
-
-            {/* Pet */}
-            <div>
-              <label className="text-sm text-slate-600">Pet</label>
-              <select
-                className="select mt-1"
-                value={formData.petId}
-                onChange={(e) => setFormData({ ...formData, petId: e.target.value })}
-                disabled={!formData.ownerId}
-              >
-                <option value="">{formData.ownerId ? 'Select pet' : 'Select owner first'}</option>
-                {filteredPets.map((p) => <option key={p._id} value={p._id}>{p.name} ({p.type})</option>)}
-              </select>
-            </div>
-
-            {/* Date */}
-            <div>
-              <label className="text-sm text-slate-600">Date</label>
-              <div className="relative mt-1">
-                <input
-                  className="input w-full pr-10"
-                  type="text"
-                  placeholder="dd/mm/yyyy"
-                  value={displayDate}
-                  onChange={(e) => {
-                    const masked = formatDmyMask(e.target.value);
-                    setDisplayDate(masked);
-                    const iso = dmyToIso(masked);
-                    setFormData(prev => ({ ...prev, date: iso || '' }));
-                  }}
-                  onBlur={() => {
-                    const iso = dmyToIso(displayDate);
-                    if (iso) setFormData({ ...formData, date: iso });
-                    else setFormData({ ...formData, date: '' });
-                  }}
-                />
-                <button
-                  type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500"
-                  aria-label="Open calendar"
-                  onClick={() => {
-                    const el = nativeDateRef.current;
-                    if (!el) return;
-                    if (el.showPicker) el.showPicker();
-                    else el.click();
-                  }}
-                >
-                  📅
-                </button>
-                <input
-                  ref={nativeDateRef}
-                  type="date"
-                  style={{
-                    position: 'absolute',
-                    width: 1, height: 1, padding: 0, margin: -1,
-                    overflow: 'hidden', clip: 'rect(0,0,0,0)',
-                    whiteSpace: 'nowrap', border: 0
-                  }}
-                  onChange={(e) => {
-                    const iso = e.target.value;
-                    setFormData((prev) => ({ ...prev, date: iso }));
-                    if (iso) {
-                      const [y, m, d] = iso.split('-');
-                      setDisplayDate(`${d}/${m}/${y}`);
-                    } else {
-                      setDisplayDate('');
-                    }
-                  }}
-                />
+          {errors.length > 0 && (
+            <div className="card mb-4">
+              <div className="card-body">
+                <ul className="list-disc ml-5 text-rose-700">
+                  {errors.map((er, i) => <li key={i}>{er}</li>)}
+                </ul>
               </div>
             </div>
+          )}
 
-            {/* Time */}
-            <div>
-              <label className="text-sm text-slate-600">Time</label>
-              <input
-                className="input mt-1"
-                type="time"
-                value={formData.time}
-                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-              />
-            </div>
+          <div className="card mb-6 card-purple">
+            <div className="card-body">
+              <div className="card-title">{editingId ? 'Edit appointment' : 'New appointment'}</div>
 
-            {/* Reason */}
-            <div className="sm:col-span-2">
-              <label className="text-sm text-slate-600">Reason</label>
-              <input
-                className="input mt-1"
-                placeholder="(optional)"
-                value={formData.reason}
-                onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-              />
-            </div>
+              <form onSubmit={handleSubmit} className="form-grid">
+                {/* Owner */}
+                <div>
+                  <label className="text-sm text-slate-600">Owner</label>
+                  <select
+                    className="select mt-1"
+                    value={formData.ownerId}
+                    onChange={(e) => setFormData({ ...formData, ownerId: e.target.value, petId: '' })}
+                  >
+                    <option value="">Select owner</option>
+                    {owners.map((o) => <option key={o._id} value={o._id}>{o.name}</option>)}
+                  </select>
+                </div>
 
-            {/* Actions */}
-            <div className="form-actions sm:col-span-2">
-              <button type="submit" className="btn btn-primary">
-                {editingId ? 'Update' : 'Book'} appointment
-              </button>
-              {editingId && (
-                <button type="button" onClick={clearForm} className="btn btn-secondary">
-                  Cancel edit
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
-      </div>
+                {/* Pet */}
+                <div>
+                  <label className="text-sm text-slate-600">Pet</label>
+                  <select
+                    className="select mt-1"
+                    value={formData.petId}
+                    onChange={(e) => setFormData({ ...formData, petId: e.target.value })}
+                    disabled={!formData.ownerId}
+                  >
+                    <option value="">{formData.ownerId ? 'Select pet' : 'Select owner first'}</option>
+                    {filteredPets.map((p) => <option key={p._id} value={p._id}>{p.name} ({p.type})</option>)}
+                  </select>
+                </div>
 
-      {/* Table */}
-      <div className="table-wrap">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Date</th><th>Time</th><th>Pet</th><th>Owner</th><th>Reason</th><th>Status</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {appointments.length === 0 ? (
-              <tr><td colSpan="7" className="text-center py-6 text-slate-500">No appointments</td></tr>
-            ) : appointments.map(appt => (
-              <tr key={appt._id}>
-                <td>{isoToDmy(appt.date) || appt.date}</td>
-                <td>{appt.time}</td>
-                <td>{appt.petId?.name || '—'}</td>
-                <td>{appt.ownerId?.name || '—'}</td>
-                <td>{appt.reason || '—'}</td>
-                <td>
-                  <span className={`badge ${
-                    appt.status === 'scheduled' ? 'badge-yellow' :
-                    appt.status === 'completed' ? 'badge-green' : 'badge-red'
-                  }`}>{appt.status}</span>
-                </td>
-                <td>
-                  <div className="flex flex-wrap gap-2">
-                    <button className="btn btn-ghost" onClick={() => handleEdit(appt)}>Edit</button>
-                    {appt.status === 'scheduled' && (
-                      <>
-                        <button className="btn btn-success" onClick={() => handleComplete(appt._id)}>
-                          Complete
-                        </button>
-                        <button className="btn btn-secondary" onClick={() => handleCancel(appt._id)}>
-                          Cancel
-                        </button>
-                      </>
-                    )}
-                    <button className="btn btn-danger" onClick={() => handleDelete(appt._id)}>Delete</button>
+                {/* Date */}
+                <div>
+                  <label className="text-sm text-slate-600">Date</label>
+                  <div className="relative mt-1">
+                    <input
+                      className="input w-full pr-10"
+                      type="text"
+                      placeholder="dd/mm/yyyy"
+                      value={displayDate}
+                      onChange={(e) => {
+                        const masked = formatDmyMask(e.target.value);
+                        setDisplayDate(masked);
+                        const iso = dmyToIso(masked);
+                        setFormData(prev => ({ ...prev, date: iso || '' }));
+                      }}
+                      onBlur={() => {
+                        const iso = dmyToIso(displayDate);
+                        if (iso) setFormData({ ...formData, date: iso });
+                        else setFormData({ ...formData, date: '' });
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500"
+                      aria-label="Open calendar"
+                      onClick={() => {
+                        const el = nativeDateRef.current;
+                        if (!el) return;
+                        if (el.showPicker) el.showPicker();
+                        else el.click();
+                      }}
+                    >
+                      📅
+                    </button>
+                    <input
+                      ref={nativeDateRef}
+                      type="date"
+                      style={{
+                        position: 'absolute',
+                        width: 1, height: 1, padding: 0, margin: -1,
+                        overflow: 'hidden', clip: 'rect(0,0,0,0)',
+                        whiteSpace: 'nowrap', border: 0
+                      }}
+                      onChange={(e) => {
+                        const iso = e.target.value;
+                        setFormData((prev) => ({ ...prev, date: iso }));
+                        if (iso) {
+                          const [y, m, d] = iso.split('-');
+                          setDisplayDate(`${d}/${m}/${y}`);
+                        } else {
+                          setDisplayDate('');
+                        }
+                      }}
+                    />
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+
+                {/* Time */}
+                <div>
+                  <label className="text-sm text-slate-600">Time</label>
+                  <input
+                    className="input mt-1"
+                    type="time"
+                    value={formData.time}
+                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                  />
+                </div>
+
+                {/* Reason */}
+                <div className="sm:col-span-2">
+                  <label className="text-sm text-slate-600">Reason</label>
+                  <input
+                    className="input mt-1"
+                    placeholder="(optional)"
+                    value={formData.reason}
+                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-actions sm:col-span-2">
+                  <button type="submit" className="btn btn-yellow">
+                    {editingId ? 'Update' : 'Book'} appointment
+                  </button>
+                  {editingId && (
+                    <button type="button" onClick={clearForm} className="btn btn-secondary">
+                      Cancel edit
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div className="table-wrap">
+            <table className="table table-soft-purple">
+              <thead>
+                <tr>
+                  <th>Date</th><th>Time</th><th>Pet</th><th>Owner</th><th>Reason</th><th>Status</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {appointments.length === 0 ? (
+                  <tr><td colSpan="7" className="text-center py-6 text-slate-500">No appointments</td></tr>
+                ) : appointments.map(appt => (
+                  <tr key={appt._id}>
+                    <td>{isoToDmy(appt.date) || appt.date}</td>
+                    <td>{appt.time}</td>
+                    <td>{appt.petId?.name || '—'}</td>
+                    <td>{appt.ownerId?.name || '—'}</td>
+                    <td>{appt.reason || '—'}</td>
+                    <td>
+                      <span className={`badge ${
+                        appt.status === 'scheduled' ? 'badge-yellow' :
+                        appt.status === 'completed' ? 'badge-green' : 'badge-red'
+                      }`}>{appt.status}</span>
+                    </td>
+                    <td>
+                      <div className="flex flex-wrap gap-2">
+                        {/* only color change for Edit */}
+                        <button className="btn btn-yellow" onClick={() => handleEdit(appt)}>Edit</button>
+                        {appt.status === 'scheduled' && (
+                          <>
+                            {/* ensure green complete button */}
+                            <button className="btn btn-success" onClick={() => handleComplete(appt._id)}>
+                              Complete
+                            </button>
+                            <button className="btn btn-secondary" onClick={() => handleCancel(appt._id)}>
+                              Cancel
+                            </button>
+                          </>
+                        )}
+                        <button className="btn btn-danger" onClick={() => handleDelete(appt._id)}>Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
       </div>
     </div>
   );
