@@ -13,6 +13,7 @@ import HistoryPage from './pages/HistoryPage';
 import AdminInvoice from './pages/AdminInvoice';
 import AdminPrescription from "./pages/AdminPrescription";
 import VetDashboard from './pages/VetDashboard';
+import Vetprofile from './pages/Vetprofile.jsx';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/admin-invoice" element={<AdminInvoice />} />
         <Route path="/admin-prescription" element={<AdminPrescription />} />
         <Route path="/vet-dashboard" element={<VetDashboard />} />
+        <Route path="/vetprofile" element={<Vetprofile />} />
 
         {/* Protect History */}
         <Route

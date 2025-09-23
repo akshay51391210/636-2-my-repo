@@ -1,0 +1,216 @@
+/* ===============================
+   Global background (paw pattern)
+   - Replace the URL below with your image from the images folder.
+   - Example: url('/images/patterns/paws.png') or url('/assets/paws.svg')
+   =============================== */
+:root {
+  --bg-image-url: url(/paws.png);
+  --brand: #7266f0;       /* lavender/indigo for the top bar */
+  --brand-700: #5a51db;
+  --surface: #ffffff;
+  --surface-2: #eef2ff;
+  --text: #0f172a;
+  --muted: #6b7280;
+  --row: #7c8cb5;         /* bluish header row */
+  --row-alt: #cfe0ff;     /* zebra row */
+  --border: #c7d2fe;
+  --success: #22c55e;
+}
+
+* { box-sizing: border-box; }
+
+.ai-page {
+  min-height: 100vh;
+  color: var(--text);
+  background: #f7f9ff;
+  position: relative;
+}
+
+/* Background pattern layer with low opacity */
+.ai-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: var(--bg-image-url);
+  background-repeat: repeat;
+  background-size: 300px 300px;  /* tune to your image */
+  opacity: 0.15;                 /* faint */
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Top Navigation */
+.ai-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  background: linear-gradient(0deg, var(--brand), var(--brand));
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.15);
+}
+
+.ai-brand {
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.ai-menu {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+}
+
+.ai-menu a {
+  color: #f3f4ff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  opacity: 0.85;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: all .2s ease;
+}
+
+.ai-menu a:hover { opacity: 1; background: rgba(255,255,255,.12); }
+.ai-menu a.active { background: rgba(255,255,255,.22); color: #fff; }
+
+.ai-logout {
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .05s ease, background .2s ease;
+}
+.ai-logout:hover { background: #dc2626; }
+.ai-logout:active { transform: translateY(1px); }
+
+/* Content container */
+.ai-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 28px auto 64px;
+  padding: 0 20px;
+}
+
+/* Welcome section */
+.ai-hero {
+  margin: 8px 0 20px;
+}
+.ai-welcome {
+  margin: 0 0 6px 0;
+  font-weight: 800;
+  font-size: clamp(20px, 2.8vw, 28px);
+}
+.ai-subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* Card */
+.ai-card {
+  position: relative;
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  padding: 22px 18px 26px;
+  margin-top: 16px;
+  box-shadow: 0 10px 30px rgba(23, 37, 84, 0.08);
+}
+
+/* Top small tab that says "Invoice" (like the mockup) */
+.ai-card-tab {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #7a89c2;
+  color: white;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 8px 18px;
+  border: 1px solid rgba(255,255,255,.6);
+  box-shadow: 0 4px 12px rgba(2, 6, 23, .12);
+}
+
+/* Table */
+.ai-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+.ai-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.ai-table thead th {
+  background: #7a89c2;
+  color: #fff;
+  text-align: left;
+  padding: 14px 18px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ai-table tbody td {
+  padding: 14px 18px;
+  font-size: 14px;
+  color: #111827;
+}
+
+.ai-table tbody tr:nth-child(even),
+.ai-table tbody tr.alt {
+  background: #c5d4f0;
+}
+.ai-table tbody tr:nth-child(odd) {
+  background: #9fb1d6;
+}
+
+.ai-right { text-align: right; }
+
+/* Status pill */
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+  background: #e5e7eb;
+  color: #111827;
+}
+.ai-badge.success {
+  background: var(--success);
+  color: #052e12;
+}
+
+/* Link-like button for Download */
+.ai-link {
+  background: transparent;
+  border: none;
+  color: #0f172a;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+.ai-link:hover { opacity: .8; }
+
+/* Small responsive tweaks */
+@media (max-width: 920px) {
+  .ai-menu { display: none; } /* keep layout simple on small screens */
+  .ai-content { margin-top: 16px; }
+}
