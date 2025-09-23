@@ -21,4 +21,16 @@ const protect = async (req, res, next) => {
     }
 };
 
+// backend/middleware/checkRole.js
+module.exports = (...allow) => (req, res, next) => {
+  try {
+    if (!req.user || !allow.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    next();
+  } catch (e) {
+    next(e);
+  }
+};
+
 module.exports = { protect };
