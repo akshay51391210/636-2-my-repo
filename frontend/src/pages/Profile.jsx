@@ -5,7 +5,6 @@ import api from '../api/axios';
 export default function Profile() {
   const nav = useNavigate();
 
-  // โปรไฟล์ของ "ผู้ใช้ที่กำลังล็อกอิน"
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -13,15 +12,9 @@ export default function Profile() {
     address: '',
     password: ''
   });
-  const [myRole, setMyRole] = useState(''); // ⬅️ เก็บ role ของผู้ใช้ที่ล็อกอิน
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-
-  // สำหรับแผง Admin
-  const [adminListLoading, setAdminListLoading] = useState(false);
-  const [users, setUsers] = useState([]); // รายการผู้ใช้ทั้งหมด (เฉพาะ admin เท่านั้นถึงดึง)
-  const [adminActionBusy, setAdminActionBusy] = useState(false);
 
   const initials = useMemo(() => {
     const src = form.name?.trim() || form.email?.trim() || '?';
@@ -33,17 +26,16 @@ export default function Profile() {
       .toUpperCase();
   }, [form.name, form.email]);
 
-  // โหลดโปรไฟล์ตัวเอง (โค้ดเดิม) + ดึง role มากำกับ UI
   useEffect(() => {
     (async () => {
       setError('');
       try {
         let res;
         try {
-          res = await api.get('/auth/profile'); // โค้ดเดิม
+          res = await api.get('/auth/profile');
         } catch (e) {
           if (e?.response?.status === 404) {
-            res = await api.get('/auth/me');    // โค้ดเดิมสำรอง
+            res = await api.get('/auth/me');
           } else {
             throw e;
           }
@@ -57,7 +49,6 @@ export default function Profile() {
           address: data.address || '',
           password: ''
         });
-        setMyRole(data.role || ''); // ⬅️ เก็บ role ของผู้ใช้ที่ล็อกอิน (ต้องให้ backend ส่ง role กลับมาด้วย)
       } catch (err) {
         if (err.response?.status === 401) {
           nav('/login');
@@ -111,50 +102,6 @@ export default function Profile() {
     nav('/login');
   };
 
-  // ===== Admin panel functions =====
-  const fetchAllUsers = async () => {
-    setAdminListLoading(true);
-    try {
-      const res = await api.get('/api/admin/users');
-      setUsers(res.data || []);
-    } catch (e) {
-      const msg = e?.response?.data?.message || 'Failed to load users.';
-      setError(msg);
-    } finally {
-      setAdminListLoading(false);
-    }
-  };
-
-  const updateUserRole = async (userId, newRole) => {
-    setAdminActionBusy(true);
-    try {
-      await api.patch(`/api/admin/users/${userId}/role`, { role: newRole });
-      // refresh
-      const next = users.map(u => (u._id === userId ? { ...u, role: newRole } : u));
-      setUsers(next);
-    } catch (e) {
-      const msg = e?.response?.data?.message || 'Failed to update role.';
-      alert(msg);
-    } finally {
-      setAdminActionBusy(false);
-    }
-  };
-
-  const deleteUser = async (userId) => {
-    if (!window.confirm('Delete this user?')) return;
-    setAdminActionBusy(true);
-    try {
-      await api.delete(`/api/admin/users/${userId}`);
-      setUsers(users.filter(u => u._id !== userId));
-    } catch (e) {
-      const msg = e?.response?.data?.message || 'Failed to delete user.';
-      alert(msg);
-    } finally {
-      setAdminActionBusy(false);
-    }
-  };
-  // ===== End admin panel functions =====
-
   if (loading) {
     return (
       <div className="min-h-screen relative"
@@ -205,11 +152,6 @@ export default function Profile() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 20, fontWeight: 800 }}>{form.name || '—'}</div>
               <div className="helper">{form.email || '—'}</div>
-              {myRole && (
-                <div className="helper" title="Your role">
-                  Role: <b>{myRole}</b>
-                </div>
-              )}
             </div>
             <div className="form-actions">
               <button type="button" className="btn btn-secondary" onClick={logout}>Log out</button>
@@ -226,7 +168,7 @@ export default function Profile() {
           </div>
         )}
 
-        {/* Edit my profile */}
+        {/* Edit form */}
         <div className="card" style={{ backgroundColor: '#ede9fe' }}>
           <div className="card-header" style={{ backgroundColor: '#a5b4fc', fontWeight: 600 }}>
             Profile details
@@ -308,79 +250,6 @@ export default function Profile() {
             </form>
           </div>
         </div>
-
-        {/* Admin: User Management Panel */}
-        {myRole === 'admin' && (
-          <div className="card" style={{ marginTop: 16, backgroundColor: '#eef2ff' }}>
-            <div className="card-header" style={{ backgroundColor: '#c7d2fe', fontWeight: 700 }}>
-              Admin • User Management
-            </div>
-            <div className="card-body">
-              <div className="form-actions" style={{ marginBottom: 12 }}>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={fetchAllUsers}
-                  disabled={adminListLoading}
-                >
-                  {adminListLoading ? 'Loading…' : 'Load users'}
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr style={{ background: '#e0e7ff' }}>
-                      <th className="px-3 py-2 text-left">Email</th>
-                      <th className="px-3 py-2 text-left">Password (hash preview)</th>
-                      <th className="px-3 py-2 text-left">Role</th>
-                      <th className="px-3 py-2 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.length ? users.map(u => (
-                      <tr key={u._id} className="border-t">
-                        <td className="px-3 py-2">{u.email}</td>
-                        <td className="px-3 py-2 text-slate-500">{u.passwordPreview || '—'}</td>
-                        <td className="px-3 py-2">
-                          <select
-                            className="input"
-                            value={u.role}
-                            onChange={(e) => updateUserRole(u._id, e.target.value)}
-                            disabled={adminActionBusy}
-                          >
-                            <option value="owner">owner</option>
-                            <option value="vet">vet</option>
-                            <option value="admin">admin</option>
-                          </select>
-                        </td>
-                        <td className="px-3 py-2 text-right">
-                          <button
-                            className="btn btn-secondary"
-                            onClick={() => deleteUser(u._id)}
-                            disabled={adminActionBusy}
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    )) : (
-                      <tr>
-                        <td colSpan={4} className="px-3 py-6 text-center text-slate-500">
-                          {adminListLoading ? 'Loading…' : 'No data. Click "Load users".'}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              <p className="helper" style={{ marginTop: 10 }}>
-                Tip: ผู้ใช้ใหม่ทั้งหมดจะถูกตั้งค่า <b>owner</b> อัตโนมัติ (default ใน schema) — แอดมินสามารถเข้ามาเปลี่ยนเป็น <b>vet</b> หรือ <b>admin</b> ได้ที่นี่
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

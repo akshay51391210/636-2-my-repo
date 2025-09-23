@@ -1,26 +1,41 @@
-// frontend/src/pages/Login.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { setToken } from "../utils/auth";
 import { useAuth } from "../context/AuthContext";
 
-export default function Login() {
+export default function VetLogin() {
   const nav = useNavigate();
   const { login } = useAuth();
 
-  const [form, setForm] = useState({ email: "", password: "" });
+  // form states
+  const [form, setForm] = useState({ email: "", password: "", vetCode: "" });
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const onChange = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const VALID_VET_CODE =
+    process.env.REACT_APP_VET_CODE /* .env */ || "IFN636-VET-ONLY";
+
+  const onChange = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const submit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+
+    // Check Vet before API
+    if ((form.vetCode || "").trim() !== VALID_VET_CODE) {
+      setErrorMsg("Invalid Vet code");
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await api.post("/auth/login", form);
+      const res = await api.post("/auth/login", {
+        email: form.email,
+        password: form.password,
+        roleHint: "vet",
+        vetCode: form.vetCode,
+      });
 
       if (res.data?.token) {
         setToken(res.data.token);
@@ -31,9 +46,14 @@ export default function Login() {
         } catch {
           me = await api.get("/auth/profile");
         }
-        login(me.data);
 
-        nav("/dashboard");
+        const userPayload =
+          me?.data?.role ? me.data : { ...me.data, role: "vet" };
+
+        login(userPayload);
+
+      
+        nav("/vet-dashboard");
       } else {
         setErrorMsg("Login response missing token");
       }
@@ -85,13 +105,13 @@ export default function Login() {
         }}
       />
 
-      {/* Login Card */}
+      {/* Card */}
       <div
         className="rounded-2xl shadow-lg p-10 relative z-10"
         style={{
           backgroundColor: "#9DB4E5",
           width: "560px",
-          height: "460px",
+          height: "520px",
         }}
       >
         <h1
@@ -102,7 +122,7 @@ export default function Login() {
             fontWeight: "bold",
           }}
         >
-          Admin login
+          Vet login
         </h1>
 
         {errorMsg && (
@@ -131,6 +151,7 @@ export default function Login() {
               disabled={loading}
             />
           </div>
+
           <div>
             <label>Password</label>
             <input
@@ -142,6 +163,20 @@ export default function Login() {
               disabled={loading}
             />
           </div>
+
+          <div>
+            <label>Vet code</label>
+            <input
+              className="w-full rounded-lg px-3 py-2 border"
+              type="text"
+              placeholder="Enter special code for vets"
+              value={form.vetCode}
+              onChange={onChange("vetCode")}
+              required
+              disabled={loading}
+            />
+          </div>
+
           <button
             type="submit"
             className="rounded-full px-6 py-2 mt-2"
@@ -152,14 +187,14 @@ export default function Login() {
             }}
             disabled={loading}
           >
-            {loading ? "Signing in..." : "Login 🐶"}
+            {loading ? "Signing in..." : "Login 🐾"}
           </button>
         </form>
       </div>
 
-      {/* Note */}
       <p className="mt-4 text-sm relative z-10">
-        Use your registered email and password.
+        For veterinarians only. Please use your registered email, password, and
+        Vet code.
       </p>
     </div>
   );

@@ -15,8 +15,13 @@ export default function Register() {
     setErrorMsg("");
     setLoading(true);
     try {
-      const res = await api.post("/api/auth/register", form);
+      // ❗️สำคัญ: ไม่ต้องใส่ /api ซ้ำ ถ้า baseURL ใน axios ตั้งไว้แล้วเป็น /api
+      const res = await api.post("/auth/register", form);
+
+      // ถ้า backend ส่ง token กลับมาก็เก็บไว้ได้
       if (res.data?.token) setToken(res.data.token);
+
+      // ไปหน้าโปรไฟล์ (หรือหน้าไหนที่ต้องการ)
       nav("/profile");
     } catch (err) {
       setErrorMsg(err?.response?.data?.message || "Registration failed");
@@ -91,6 +96,7 @@ export default function Register() {
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
               disabled={loading}
+              autoComplete="name"
             />
           </div>
           <div>
@@ -102,6 +108,7 @@ export default function Register() {
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               required
               disabled={loading}
+              autoComplete="email"
             />
           </div>
           <div>
@@ -113,6 +120,7 @@ export default function Register() {
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               required
               disabled={loading}
+              autoComplete="new-password"
             />
           </div>
           <div className="flex gap-4 justify-center mt-2">
@@ -126,7 +134,7 @@ export default function Register() {
               }}
               disabled={loading}
             >
-              {loading ? "Creating..." : "Sign up 🐶"}
+              {loading ? "Creating..." : "Register 🐶"}
             </button>
             <button
               type="button"
