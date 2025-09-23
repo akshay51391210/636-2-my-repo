@@ -33,20 +33,13 @@ const Navbar = () => {
       <div className="flex items-center space-x-3">
         {!user && (
           <>
-            <button
-              className={btnClass}
-              style={btnStyle}
-              onClick={() => alert('Vet sign in')}
-            >
-              Vet Sign in
-            </button>
-            <button
-              className={btnClass}
-              style={btnStyle}
-              onClick={() => alert('Owner sign in')}
-            >
-              Owner Sign in
-            </button>
+            {/* both buttons now navigate to Vet login page */}
+            <Link to="/vet-login" className={btnClass} style={btnStyle}>
+              Vet Login
+            </Link>
+            <Link to="/vet-login" className={btnClass} style={btnStyle}>
+              Owner Login
+            </Link>
           </>
         )}
 
@@ -83,7 +76,7 @@ const Navbar = () => {
         ) : (
           <>
             <Link to="/login" className={btnClass} style={btnStyle}>
-              Login
+              Admin Login
             </Link>
             <Link to="/register" className={btnClass} style={btnStyle}>
               Register
