@@ -14,20 +14,25 @@ const Navbar = () => {
   const btnClass = 'px-4 py-2 rounded-full font-bold hover:opacity-90 transition';
   const btnStyle = { backgroundColor: '#F3F58B', color: '#000' };
 
+  const brand = (
+    <Link
+      to="/dashboard"
+      className="text-2xl font-bold"
+      style={{ color: '#FFFFFF' }}
+    >
+      Pet Clinic Management
+    </Link>
+  );
+
   return (
     <nav
       className="bg-blue-600 text-black p-4 flex justify-between items-center"
       style={{ fontFamily: "'Cherry Bomb One', cursive" }}
     >
-      <Link
-        to="/dashboard"
-        className="text-2xl font-bold"
-        style={{ color: '#FFFFFF' }}
-      >
-        Pet Clinic Management
-      </Link>
+      {brand}
 
       <div className="flex items-center space-x-3">
+        {/* ยังไม่ล็อกอิน */}
         {!user && (
           <>
             <Link to="/admin-login" className={btnClass} style={btnStyle}>
@@ -45,35 +50,89 @@ const Navbar = () => {
           </>
         )}
 
+        {/* ล็อกอินแล้ว */}
         {user && (
           <>
-            <Link to="/admin-invoice" className={btnClass} style={btnStyle}>
-              Admin Invoice
-            </Link>
-            <Link to="/admin-prescription" className={btnClass} style={btnStyle}>
-              Admin Prescription
-            </Link>
-            <Link to="/appointments" className={btnClass} style={btnStyle}>
-              Appointment
-            </Link>
-            <Link to="/dashboard" className={btnClass} style={btnStyle}>
-              Dashboard
-            </Link>
-            <Link to="/history" className={btnClass} style={btnStyle}>
-              History
-            </Link>
-            <Link to="/owners" className={btnClass} style={btnStyle}>
-              Add Owner
-            </Link>
-            <Link to="/pets" className={btnClass} style={btnStyle}>
-              Add Pet
-            </Link>
-            <Link to="/profile" className={btnClass} style={btnStyle}>
-              Admin Profile
-            </Link>
-            <button onClick={handleLogout} className={btnClass} style={btnStyle}>
-              Logout
-            </button>
+            {/* OWNER: ให้โชว์เฉพาะเมนูที่กำหนด */}
+            {user.role === 'owner' && (
+              <>
+                <Link to="/history" className={btnClass} style={btnStyle}>
+                  History
+                </Link>
+                <Link to="/appointments" className={btnClass} style={btnStyle}>
+                  Appointment
+                </Link>
+                <Link to="/pets" className={btnClass} style={btnStyle}>
+                  Add Pet
+                </Link>
+                <Link to="/owners" className={btnClass} style={btnStyle}>
+                  Add Owner
+                </Link>
+                <Link to="/profile" className={btnClass} style={btnStyle}>
+                  Profile
+                </Link>
+                <button onClick={handleLogout} className={btnClass} style={btnStyle}>
+                  Logout
+                </button>
+              </>
+            )}
+
+            {/* ADMIN: เมนูเต็มเหมือนเดิม */}
+            {user.role === 'admin' && (
+              <>
+                <Link to="/admin-invoice" className={btnClass} style={btnStyle}>
+                  Admin Invoice
+                </Link>
+                <Link to="/admin-prescription" className={btnClass} style={btnStyle}>
+                  Admin Prescription
+                </Link>
+                <Link to="/appointments" className={btnClass} style={btnStyle}>
+                  Appointment
+                </Link>
+                <Link to="/dashboard" className={btnClass} style={btnStyle}>
+                  Dashboard
+                </Link>
+                <Link to="/history" className={btnClass} style={btnStyle}>
+                  History
+                </Link>
+                <Link to="/owners" className={btnClass} style={btnStyle}>
+                  Add Owner
+                </Link>
+                <Link to="/pets" className={btnClass} style={btnStyle}>
+                  Add Pet
+                </Link>
+                <Link to="/profile" className={btnClass} style={btnStyle}>
+                  Profile
+                </Link>
+                <button onClick={handleLogout} className={btnClass} style={btnStyle}>
+                  Logout
+                </button>
+              </>
+            )}
+
+            {/* VET: ใช้ชุดเมนูสำหรับ Vet (ถ้าต้องการเพิ่ม/ลด ปรับในบล็อคนี้) */}
+            {user.role === 'vet' && (
+              <>
+                <Link to="/vet-dashboard" className={btnClass} style={btnStyle}>
+                  Vet Dashboard
+                </Link>
+                <Link to="/appointments" className={btnClass} style={btnStyle}>
+                  Appointment
+                </Link>
+                <Link to="/pets" className={btnClass} style={btnStyle}>
+                  Add Pet
+                </Link>
+                <Link to="/owners" className={btnClass} style={btnStyle}>
+                  Add Owner
+                </Link>
+                <Link to="/profile" className={btnClass} style={btnStyle}>
+                  Profile
+                </Link>
+                <button onClick={handleLogout} className={btnClass} style={btnStyle}>
+                  Logout
+                </button>
+              </>
+            )}
           </>
         )}
       </div>
