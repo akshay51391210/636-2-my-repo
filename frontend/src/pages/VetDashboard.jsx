@@ -1,4 +1,3 @@
-// src/pages/VetDashboard.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { format, startOfDay, endOfDay } from "date-fns";
 
@@ -93,10 +92,10 @@ export default function VetDashboard() {
           {/* Welcome (left) */}
           <div>
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              Welcome : <span className="font-semibold">Dr. Smith</span>{" "}
+              Welcome <span className="font-semibold">to medical record</span>{" "}
               <span role="img" aria-label="wave">👋</span>
             </h2>
-            <p className="text-slate-600">Medical Records Page</p>
+            <p className="text-slate-600">edit / delete medical record </p>
           </div>
 
           {/* Filters (right) */}
