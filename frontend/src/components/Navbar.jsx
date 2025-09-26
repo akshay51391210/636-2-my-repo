@@ -11,19 +11,16 @@ const Navbar = () => {
     navigate('/login');
   };
 
-  // Menu button style (yellow background + black text)
-  const btnClass =
-    'px-4 py-2 rounded-full font-bold hover:opacity-90 transition';
+  const btnClass = 'px-4 py-2 rounded-full font-bold hover:opacity-90 transition';
   const btnStyle = { backgroundColor: '#F3F58B', color: '#000' };
 
   return (
-    // Set the entire navbar font to Cherry Bomb One
     <nav
       className="bg-blue-600 text-black p-4 flex justify-between items-center"
       style={{ fontFamily: "'Cherry Bomb One', cursive" }}
     >
       <Link
-        to="/Dashboard"
+        to="/dashboard"
         className="text-2xl font-bold"
         style={{ color: '#FFFFFF' }}
       >
@@ -33,17 +30,22 @@ const Navbar = () => {
       <div className="flex items-center space-x-3">
         {!user && (
           <>
-            {/* both buttons now navigate to Vet login page */}
+            <Link to="/admin-login" className={btnClass} style={btnStyle}>
+              Admin Login
+            </Link>
             <Link to="/vet-login" className={btnClass} style={btnStyle}>
               Vet Login
             </Link>
-            <Link to="/vet-login" className={btnClass} style={btnStyle}>
+            <Link to="/owner-login" className={btnClass} style={btnStyle}>
               Owner Login
+            </Link>
+            <Link to="/register" className={btnClass} style={btnStyle}>
+              Register
             </Link>
           </>
         )}
 
-        {user ? (
+        {user && (
           <>
             <Link to="/admin-invoice" className={btnClass} style={btnStyle}>
               Admin Invoice
@@ -54,7 +56,7 @@ const Navbar = () => {
             <Link to="/appointments" className={btnClass} style={btnStyle}>
               Appointment
             </Link>
-            <Link to="/Dashboard" className={btnClass} style={btnStyle}>
+            <Link to="/dashboard" className={btnClass} style={btnStyle}>
               Dashboard
             </Link>
             <Link to="/history" className={btnClass} style={btnStyle}>
@@ -72,15 +74,6 @@ const Navbar = () => {
             <button onClick={handleLogout} className={btnClass} style={btnStyle}>
               Logout
             </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" className={btnClass} style={btnStyle}>
-              Admin Login
-            </Link>
-            <Link to="/register" className={btnClass} style={btnStyle}>
-              Register
-            </Link>
           </>
         )}
       </div>
