@@ -70,6 +70,9 @@ const ownerRoutes = tryRequire(['./routes/owners', './routes/ownerRoutes']);
 const appointmentRoutes = tryRequire(['./routes/appointments', './routes/appointmentRoutes']);
 const historyRoutes = tryRequire(['./routes/history', './routes/historyRoutes']);
 const taskRoutes = tryRequire(['./routes/tasks', './routes/taskRoutes']);
+const invoiceRoutes = require('./routes/invoiceRoutes');
+
+
 
 function mount(name, router) {
   if (!router) return;
@@ -84,6 +87,7 @@ mount('owners', ownerRoutes);
 mount('appointments', appointmentRoutes);
 mount('history', historyRoutes);
 mount('tasks', taskRoutes);
+mount('invoices', invoiceRoutes);
 
 // ================== Health / Root ==================
 app.get('/', (_req, res) => {
