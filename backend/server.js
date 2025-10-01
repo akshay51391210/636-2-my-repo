@@ -88,6 +88,14 @@ mount('history', historyRoutes, true); // Protected
 mount('tasks', taskRoutes);
 mount('admin/users', adminUsersRoutes);
 
+mount('auth', authRoutes); // Public (has own protect where needed)
+mount('pets', petRoutes, true); // Protected - changed from false to true
+mount('owners', ownerRoutes, true); // Protected - changed from false to true
+mount('appointments', appointmentRoutes, true); // Protected
+mount('history', historyRoutes, true); // Protected
+mount('tasks', taskRoutes);
+mount('admin/users', adminUsersRoutes);
+
 // Health
 app.get('/', (_req, res) => {
   res.send('Backend is running on EC2 with PM2 🚀');

@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+// frontend/src/pages/OwnerPage.jsx
+import React, { useEffect, useCallback, useState } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const API_BASE = 'http://localhost:5001/owners';
 
@@ -11,27 +13,52 @@ const TEXT_DARK = '#111827';
 const BTN_YELLOW = '#F3F58B';
 
 export default function OwnerPage() {
+  const { user } = useAuth();
   const [owners, setOwners] = useState([]);
   const [formData, setFormData] = useState({ name: '', phone: '' });
   const [editingId, setEditingId] = useState(null);
 
-  useEffect(() => { fetchOwners(); }, []);
+  // stable helper
+  const getToken = () => localStorage.getItem('token');
 
-  const fetchOwners = async () => {
+  // ✅ ครอบด้วย useCallback เพื่อไม่ให้ useEffect ฟ้อง
+  const fetchOwners = useCallback(async () => {
     try {
-      const res = await axios.get(API_BASE);
+      const token = getToken();
+      const res = await axios.get(API_BASE, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       setOwners(res.data || []);
-    } catch (err) { console.error(err); }
-  };
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to fetch owners');
+    }
+  }, []); // ไม่มี dependency ภายนอกที่เปลี่ยนแปลง
+
+  useEffect(() => {
+    fetchOwners();
+  }, [fetchOwners]); // ✅ ระบุ dependency ให้ถูกต้อง
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingId) await axios.put(`${API_BASE}/${editingId}`, formData);
-      else await axios.post(API_BASE, formData);
-      setFormData({ name: '', phone: '' }); setEditingId(null);
+      const token = getToken();
+      if (editingId) {
+        await axios.put(`${API_BASE}/${editingId}`, formData, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+      } else {
+        await axios.post(API_BASE, formData, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+      }
+      setFormData({ name: '', phone: '' });
+      setEditingId(null);
       fetchOwners();
-    } catch (err) { console.error(err); alert(err.response?.data?.message || 'Save failed'); }
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Save failed');
+    }
   };
 
   const handleEdit = (owner) => {
@@ -41,11 +68,24 @@ export default function OwnerPage() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this owner?')) return;
-    try { await axios.delete(`${API_BASE}/${id}`); fetchOwners(); }
-    catch (err) { console.error(err); alert('Delete failed'); }
+    try {
+      const token = getToken();
+      await axios.delete(`${API_BASE}/${id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      fetchOwners();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Delete failed');
+    }
   };
 
-  const cancelEdit = () => { setEditingId(null); setFormData({ name: '', phone: '' }); };
+  const cancelEdit = () => {
+    setEditingId(null);
+    setFormData({ name: '', phone: '' });
+  };
+
+  const isOwner = user?.role === 'owner';
 
   return (
     <div
@@ -62,7 +102,11 @@ export default function OwnerPage() {
         <div className="container-page">
           <div className="mb-4">
             <h1 style={{ margin: 0 }}>Owners</h1>
-            <p className="helper">Manage owner records (list / add / edit / delete)</p>
+            <p className="helper">
+              {isOwner
+                ? 'Manage your owner profile'
+                : 'Manage owner records (list / add / edit / delete)'}
+            </p>
           </div>
 
           <div
@@ -73,10 +117,7 @@ export default function OwnerPage() {
               border: `1px solid ${PURPLE_BORDER}`,
             }}
           >
-            <div
-              className="card-header"
-              style={{ color: TEXT_DARK, fontWeight: 700 }}
-            >
+            <div className="card-header" style={{ color: TEXT_DARK, fontWeight: 700 }}>
               {editingId ? 'Edit owner' : 'Add owner'}
             </div>
 
@@ -146,7 +187,9 @@ export default function OwnerPage() {
                 {owners.length === 0 ? (
                   <tr>
                     <td className="empty" colSpan="3">
-                      No owners
+                      {isOwner
+                        ? 'No owner profile found. Please create one.'
+                        : 'No owners'}
                     </td>
                   </tr>
                 ) : (
@@ -174,12 +217,14 @@ export default function OwnerPage() {
                             Edit
                           </button>
 
-                          <button
-                            className="btn btn-danger"
-                            onClick={() => handleDelete(owner._id)}
-                          >
-                            Delete
-                          </button>
+                          {!isOwner && (
+                            <button
+                              className="btn btn-danger"
+                              onClick={() => handleDelete(owner._id)}
+                            >
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
