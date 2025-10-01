@@ -17,11 +17,13 @@ export default function AppointmentPage() {
   const [editingId, setEditingId] = useState(null);
   const [errors, setErrors] = useState([]);
 
-  useEffect(() => { fetchAll(); }, []);
+  // Fetch all data on mount
+  useEffect(() => { 
+    fetchAll(); 
+  }, []);
   
   const fetchAll = async () => {
     try {
-      // ⚠️ Add timestamp to bypass cache
       const timestamp = Date.now();
       const [o, p, a] = await Promise.all([
         api.get(`/owners?_t=${timestamp}`),
@@ -105,6 +107,7 @@ export default function AppointmentPage() {
     setDisplayDate(isoToDmy(formData.date));
   }, [formData.date]);
 
+  // Filter pets by selected owner
   const filteredPets = useMemo(() => {
     if (!formData.ownerId) return [];
     return pets.filter(pt => String(pt.ownerId?._id || pt.ownerId) === String(formData.ownerId));
@@ -121,12 +124,14 @@ export default function AppointmentPage() {
 
     if (!formData.time) errs.push('Time is required.');
 
+    // Validate pet belongs to owner
     const pet = pets.find(p => String(p._id) === String(formData.petId));
     const ownerOfPet = pet?.ownerId?._id || pet?.ownerId;
     if (pet && String(ownerOfPet) !== String(formData.ownerId)) {
       errs.push('Selected pet does not belong to the owner.');
     }
 
+    // Validate date is not in the past
     const dt = formData.date && formData.time ? new Date(`${formData.date}T${formData.time}:00`) : null;
     if (dt && dt < new Date()) errs.push('Appointment cannot be in the past.');
 
@@ -266,6 +271,7 @@ export default function AppointmentPage() {
             </p>
           </div>
 
+          {/* Validation errors */}
           {errors.length > 0 && (
             <div className="card mb-4">
               <div className="card-body">
@@ -276,11 +282,13 @@ export default function AppointmentPage() {
             </div>
           )}
 
+          {/* Form Card */}
           <div className="card mb-6 card-purple">
             <div className="card-body">
               <div className="card-title">{editingId ? 'Edit appointment' : 'New appointment'}</div>
 
               <form onSubmit={handleSubmit} className="form-grid">
+                {/* Owner Selection */}
                 <div>
                   <label className="text-sm text-slate-600">Owner</label>
                   <select
@@ -293,6 +301,7 @@ export default function AppointmentPage() {
                   </select>
                 </div>
 
+                {/* Pet Selection (filtered by owner) */}
                 <div>
                   <label className="text-sm text-slate-600">Pet</label>
                   <select
@@ -306,6 +315,7 @@ export default function AppointmentPage() {
                   </select>
                 </div>
 
+                {/* Date Input */}
                 <div>
                   <label className="text-sm text-slate-600">Date</label>
                   <div className="relative mt-1">
@@ -362,6 +372,7 @@ export default function AppointmentPage() {
                   </div>
                 </div>
 
+                {/* Time Input */}
                 <div>
                   <label className="text-sm text-slate-600">Time</label>
                   <input
@@ -372,6 +383,7 @@ export default function AppointmentPage() {
                   />
                 </div>
 
+                {/* Reason Input */}
                 <div className="sm:col-span-2">
                   <label className="text-sm text-slate-600">Reason</label>
                   <input
@@ -382,6 +394,7 @@ export default function AppointmentPage() {
                   />
                 </div>
 
+                {/* Form Actions */}
                 <div className="form-actions sm:col-span-2">
                   <button type="submit" className="btn btn-yellow">
                     {editingId ? 'Update' : 'Book'} appointment
@@ -396,11 +409,18 @@ export default function AppointmentPage() {
             </div>
           </div>
 
+          {/* Appointments Table */}
           <div className="table-wrap">
             <table className="table table-soft-purple">
               <thead>
                 <tr>
-                  <th>Date</th><th>Time</th><th>Pet</th><th>Owner</th><th>Reason</th><th>Status</th><th>Actions</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Pet</th>
+                  <th>Owner</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
