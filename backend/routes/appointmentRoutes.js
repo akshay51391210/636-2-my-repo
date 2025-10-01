@@ -12,19 +12,21 @@ async function findConflict({ petId, date, time, excludeId }) {
 
 /**
  * GET /appointments
- * Filter by role: owner sees only their appointments
+ * Filter by role: owner sees only their appointments, admin/vet see all
  */
 router.get('/', protect, async (req, res) => {
   try {
     const { ownerId, petId, status, date } = req.query;
     const filter = {};
     
-    // If user is owner, only show their appointments
+    // Owner sees ONLY their appointments
     if (req.user.role === 'owner') {
       filter.ownerId = req.user._id;
-    } else {
-      // Admin/vet can filter by ownerId if provided
+    }
+    // Admin/vet see ALL appointments (unless they filter by ownerId explicitly)
+    else {
       if (ownerId) filter.ownerId = ownerId;
+      // Don't add any ownerId filter if not provided - show all
     }
     
     if (petId) filter.petId = petId;
@@ -44,7 +46,7 @@ router.get('/', protect, async (req, res) => {
 
 /**
  * GET /appointments/summary
- * Filter by owner role
+ * Owner sees only their data, admin/vet see all
  */
 router.get('/summary', protect, async (req, res) => {
   try {
@@ -64,6 +66,7 @@ router.get('/summary', protect, async (req, res) => {
     if (req.user.role === 'owner') {
       filter.ownerId = req.user._id;
     }
+    // Admin/vet see ALL data (no additional filter)
 
     const summary = await Appointment.aggregate([
       { $match: filter },
@@ -101,7 +104,7 @@ router.get('/summary', protect, async (req, res) => {
 
 /**
  * GET /appointments/:id
- * Check ownership for owner role
+ * Owner can only see their own, admin/vet see all
  */
 router.get('/:id', protect, async (req, res) => {
   try {
@@ -164,7 +167,7 @@ router.patch('/:id', protect, async (req, res) => {
     const current = await Appointment.findById(req.params.id);
     if (!current) return res.status(404).json({ message: 'Appointment not found' });
 
-    // Check ownership for owner role
+    // Owner can only update their own
     if (req.user.role === 'owner' && String(current.ownerId) !== String(req.user._id)) {
       return res.status(403).json({ message: 'Access denied' });
     }
@@ -197,7 +200,10 @@ router.patch('/:id', protect, async (req, res) => {
   }
 });
 
-// Other routes (cancel, complete, delete) - add similar ownership checks
+/**
+ * PATCH /appointments/:id/cancel
+ * Owner can only cancel their own
+ */
 router.patch('/:id/cancel', protect, async (req, res) => {
   try {
     const appt = await Appointment.findById(req.params.id);
@@ -220,6 +226,10 @@ router.patch('/:id/cancel', protect, async (req, res) => {
   }
 });
 
+/**
+ * PATCH /appointments/:id/complete
+ * Only admin/vet can complete
+ */
 router.patch('/:id/complete', protect, async (req, res) => {
   try {
     const appt = await Appointment.findById(req.params.id);
@@ -247,6 +257,10 @@ router.patch('/:id/complete', protect, async (req, res) => {
   }
 });
 
+/**
+ * DELETE /appointments/:id
+ * Owner can only delete their own
+ */
 router.delete('/:id', protect, async (req, res) => {
   try {
     const appt = await Appointment.findById(req.params.id);
@@ -263,6 +277,10 @@ router.delete('/:id', protect, async (req, res) => {
   }
 });
 
+/**
+ * PUT /appointments/:id (full update)
+ * Owner can only update their own
+ */
 router.put('/:id', protect, async (req, res) => {
   try {
     const current = await Appointment.findById(req.params.id);
