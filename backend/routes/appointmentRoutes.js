@@ -12,21 +12,20 @@ async function findConflict({ petId, date, time, excludeId }) {
 
 /**
  * GET /appointments
- * Filter by role: owner sees only their appointments, admin/vet see all
+ * Owner sees ONLY their own appointments
+ * Admin/Vet see all appointments
  */
 router.get('/', protect, async (req, res) => {
   try {
     const { ownerId, petId, status, date } = req.query;
     const filter = {};
     
-    // Owner sees ONLY their appointments
+    // IMPORTANT: Owner can only see their own appointments
     if (req.user.role === 'owner') {
       filter.ownerId = req.user._id;
-    }
-    // Admin/vet see ALL appointments (unless they filter by ownerId explicitly)
-    else {
-      if (ownerId) filter.ownerId = ownerId;
-      // Don't add any ownerId filter if not provided - show all
+    } else if (ownerId) {
+      // Admin/Vet can filter by ownerId if provided
+      filter.ownerId = ownerId;
     }
     
     if (petId) filter.petId = petId;
@@ -46,7 +45,7 @@ router.get('/', protect, async (req, res) => {
 
 /**
  * GET /appointments/summary
- * Owner sees only their data, admin/vet see all
+ * Owner sees only their data
  */
 router.get('/summary', protect, async (req, res) => {
   try {
@@ -62,11 +61,10 @@ router.get('/summary', protect, async (req, res) => {
 
     const filter = { date: { $gte: from, $lte: to } };
     
-    // Owner sees only their data
+    // Owner filter
     if (req.user.role === 'owner') {
       filter.ownerId = req.user._id;
     }
-    // Admin/vet see ALL data (no additional filter)
 
     const summary = await Appointment.aggregate([
       { $match: filter },
@@ -104,7 +102,7 @@ router.get('/summary', protect, async (req, res) => {
 
 /**
  * GET /appointments/:id
- * Owner can only see their own, admin/vet see all
+ * Owner can only see their own
  */
 router.get('/:id', protect, async (req, res) => {
   try {
@@ -114,7 +112,7 @@ router.get('/:id', protect, async (req, res) => {
     
     if (!item) return res.status(404).json({ message: 'Appointment not found' });
     
-    // Owner can only see their own
+    // Check ownership
     if (req.user.role === 'owner' && String(item.ownerId._id) !== String(req.user._id)) {
       return res.status(403).json({ message: 'Access denied' });
     }
@@ -133,7 +131,7 @@ router.post('/', protect, async (req, res) => {
   try {
     let { petId, ownerId, date, time, reason } = req.body;
     
-    // Force ownerId for owner role
+    // Force owner to use their own ID
     if (req.user.role === 'owner') {
       ownerId = req.user._id;
     }
@@ -167,7 +165,7 @@ router.patch('/:id', protect, async (req, res) => {
     const current = await Appointment.findById(req.params.id);
     if (!current) return res.status(404).json({ message: 'Appointment not found' });
 
-    // Owner can only update their own
+    // Check ownership
     if (req.user.role === 'owner' && String(current.ownerId) !== String(req.user._id)) {
       return res.status(403).json({ message: 'Access denied' });
     }
@@ -209,6 +207,7 @@ router.patch('/:id/cancel', protect, async (req, res) => {
     const appt = await Appointment.findById(req.params.id);
     if (!appt) return res.status(404).json({ message: 'Appointment not found' });
     
+    // Check ownership
     if (req.user.role === 'owner' && String(appt.ownerId) !== String(req.user._id)) {
       return res.status(403).json({ message: 'Access denied' });
     }
@@ -235,7 +234,7 @@ router.patch('/:id/complete', protect, async (req, res) => {
     const appt = await Appointment.findById(req.params.id);
     if (!appt) return res.status(404).json({ message: 'Appointment not found' });
 
-    // Only admin/vet can complete
+    // Owner cannot complete appointments
     if (req.user.role === 'owner') {
       return res.status(403).json({ message: 'Only staff can complete appointments' });
     }
@@ -266,6 +265,7 @@ router.delete('/:id', protect, async (req, res) => {
     const appt = await Appointment.findById(req.params.id);
     if (!appt) return res.status(404).json({ message: 'Appointment not found' });
     
+    // Check ownership
     if (req.user.role === 'owner' && String(appt.ownerId) !== String(req.user._id)) {
       return res.status(403).json({ message: 'Access denied' });
     }
@@ -286,6 +286,7 @@ router.put('/:id', protect, async (req, res) => {
     const current = await Appointment.findById(req.params.id);
     if (!current) return res.status(404).json({ message: 'Appointment not found' });
 
+    // Check ownership
     if (req.user.role === 'owner' && String(current.ownerId) !== String(req.user._id)) {
       return res.status(403).json({ message: 'Access denied' });
     }
