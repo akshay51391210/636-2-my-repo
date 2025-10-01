@@ -13,6 +13,10 @@ const PORT = process.env.PORT || 5001;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // ================== Add New IP here ================== CORS ==================
+
+
+
+
 const ALLOW_LIST = new Set([
   // Frontend EC2 
   'http://3.107.206.208',
@@ -64,6 +68,9 @@ const ownerRoutes = tryRequire(['./routes/owners', './routes/ownerRoutes']);
 const appointmentRoutes = tryRequire(['./routes/appointments', './routes/appointmentRoutes']);
 const historyRoutes = tryRequire(['./routes/history', './routes/historyRoutes']);
 const taskRoutes = tryRequire(['./routes/tasks', './routes/taskRoutes']);
+const prescriptionRoutes = tryRequire(['./routes/prescriptions', './routes/prescriptionRoutes']);
+
+
 
 function mount(name, router) {
   if (!router) return;
@@ -78,7 +85,7 @@ mount('owners', ownerRoutes);
 mount('appointments', appointmentRoutes);
 mount('history', historyRoutes);
 mount('tasks', taskRoutes);
-
+mount('prescriptions', prescriptionRoutes);
 // ================== Health / Root ==================
 app.get('/', (_req, res) => {
   res.send('Backend is running on EC2 with PM2 🚀');
