@@ -1,6 +1,7 @@
 // frontend/src/pages/PetPage.jsx
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const API_PETS = 'http://localhost:5001/pets';
 const API_OWNERS = 'http://localhost:5001/owners';
@@ -50,6 +51,7 @@ const formatDmyMask = (val) => {
 };
 
 export default function PetPage() {
+  const { user } = useAuth();
   const [pets, setPets] = useState([]);
   const [owners, setOwners] = useState([]);
   const [formData, setFormData] = useState({ name:'', type:'', breed:'', dob:'', ownerId:'' });
@@ -59,11 +61,23 @@ export default function PetPage() {
   const nativeDateRef = useRef(null);
   const dobInputRef = useRef(null);
 
-  useEffect(() => { fetchAll(); }, []);
-  const fetchAll = async () => {
-    const [p, o] = await Promise.all([axios.get(API_PETS), axios.get(API_OWNERS)]);
-    setPets(p.data || []); setOwners(o.data || []);
-  };
+  const isOwner = user?.role === 'owner';
+
+  // ✅ ครอบด้วย useCallback และอ่าน token ภายในเพื่อตัด dependency
+  const fetchAll = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const [p, o] = await Promise.all([
+      axios.get(API_PETS,  { headers }),
+      axios.get(API_OWNERS,{ headers })
+    ]);
+    setPets(p.data || []);
+    setOwners(o.data || []);
+  }, []); // ไม่มี dependency ภายนอก
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]); // ✅ ระบุ dependency ให้ถูกต้อง
 
   useEffect(() => {
     setDisplayDob(isoToDmy(formData.dob));
@@ -86,9 +100,16 @@ export default function PetPage() {
       dobInputRef.current?.focus();
       return;
     }
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
     const payload = { ...formData, dob: isoFromDisplay };
-    if (editingId) await axios.put(`${API_PETS}/${editingId}`, payload);
-    else await axios.post(API_PETS, payload);
+
+    if (editingId) {
+      await axios.put(`${API_PETS}/${editingId}`, payload, { headers });
+    } else {
+      await axios.post(API_PETS, payload, { headers });
+    }
+
     setFormData({ name:'', type:'', breed:'', dob:'', ownerId:'' });
     setDisplayDob('');
     setEditingId(null);
@@ -111,7 +132,9 @@ export default function PetPage() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this pet?')) return;
-    await axios.delete(`${API_PETS}/${id}`);
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    await axios.delete(`${API_PETS}/${id}`, { headers });
     fetchAll();
   };
 
@@ -135,7 +158,11 @@ export default function PetPage() {
         <div className="container-page">
           <div className="mb-4">
             <h1 style={{ margin: 0 }}>Pets</h1>
-            <p className="helper">Manage pet records and link to an owner</p>
+            <p className="helper">
+              {isOwner
+                ? 'Manage your pets and link to your owner profile'
+                : 'Manage pet records and link to an owner'}
+            </p>
           </div>
 
           <div
@@ -344,9 +371,14 @@ export default function PetPage() {
                         >
                           Edit
                         </button>
-                        <button className="btn btn-danger" onClick={() => handleDelete(pet._id)}>
-                          Delete
-                        </button>
+                        {!isOwner && (
+                          <button
+                            className="btn btn-danger"
+                            onClick={() => handleDelete(pet._id)}
+                          >
+                            Delete
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
