@@ -1,52 +1,48 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
-import axios from 'axios';
+import api from '../api/axios'; // Use api instead of axios
 
-const API_APPTS  = 'http://localhost:5001/appointments';
-const API_OWNERS = 'http://localhost:5001/owners';
-const API_PETS   = 'http://localhost:5001/pets';
-const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5001'; // same host and port as API
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5001';
 
 export default function AppointmentPage() {
   const [appointments, setAppointments] = useState([]);
   const [owners, setOwners] = useState([]);
   const [pets, setPets] = useState([]);
-  const socketRef = useRef(null); //Socket.IO listener that triggers an alert and refresh:
-  // API value keeps ISO (yyyy-mm-dd). UI shows dd/mm/yyyy via displayDate.
+  const socketRef = useRef(null);
+  
   const [formData, setFormData] = useState({ ownerId:'', petId:'', date:'', time:'', reason:'' });
-  const [displayDate, setDisplayDate] = useState(''); // dd/mm/yyyy
-  const nativeDateRef = useRef(null); // hidden native date input for calendar
+  const [displayDate, setDisplayDate] = useState('');
+  const nativeDateRef = useRef(null);
 
   const [editingId, setEditingId] = useState(null);
   const [errors, setErrors] = useState([]);
 
   useEffect(() => { fetchAll(); }, []);
+  
   const fetchAll = async () => {
     try {
+      // Use api (with token) instead of axios
       const [o, p, a] = await Promise.all([
-        axios.get(API_OWNERS),
-        axios.get(API_PETS),
-        axios.get(API_APPTS),
+        api.get('/owners'),
+        api.get('/pets'),
+        api.get('/appointments'),
       ]);
       setOwners(o.data || []);
       setPets(p.data || []);
       setAppointments(a.data || []);
     } catch (e) {
       console.error(e);
-      alert('Error fetching data');
+      alert('Error fetching data: ' + (e.response?.data?.message || e.message));
     }
   };
 
-  // --- LIVE NOTIFICATIONS: listen for 'notification' events and show an alert ---
+  // Socket.IO for live notifications
   useEffect(() => {
-  // connect once
     socketRef.current = io(SOCKET_URL, { transports: ['websocket'] });
 
     const onNotification = (notification) => {
-      // if (formData.ownerId && notification.ownerId !== String(formData.ownerId)) return;
       const msg = notification?.message || 'Appointment updated';
       alert(`${msg}`);
-      // optional: refresh the appointments table to reflect changes
       refetchAppointments().catch(() => {});
     };
 
@@ -56,9 +52,9 @@ export default function AppointmentPage() {
       socketRef.current?.off('notification', onNotification);
       socketRef.current?.disconnect();
     };
-  }, []); // mount once
+  }, []);
 
-  // ---------- date helpers (display <-> ISO) ----------
+  // Date helpers
   const isoToDmy = (iso) => {
     if (!iso || typeof iso !== 'string') return '';
     const [y, m, d] = iso.split('-');
@@ -79,7 +75,6 @@ export default function AppointmentPage() {
     return `${yyyy}-${mmStr}-${ddStr}`;
   };
 
-  // auto-insert slash while typing (dd/mm/yyyy)
   const formatDmyMask = (val) => {
     const digits = (val || '').replace(/\D/g, '').slice(0, 8);
     if (digits.length <= 2) return digits;
@@ -99,7 +94,7 @@ export default function AppointmentPage() {
   const validate = () => {
     const errs = [];
     if (!formData.ownerId) errs.push('Owner is required.');
-    if (!formData.petId)   errs.push('Pet is required.');
+    if (!formData.petId) errs.push('Pet is required.');
 
     const isoFromDisplay = dmyToIso(displayDate);
     if (!isoFromDisplay) errs.push('Date is required in dd/mm/yyyy.');
@@ -125,9 +120,9 @@ export default function AppointmentPage() {
     if (!validate()) return;
     try {
       if (editingId) {
-        await axios.patch(`${API_APPTS}/${editingId}`, formData);
+        await api.patch(`/appointments/${editingId}`, formData);
       } else {
-        await axios.post(API_APPTS, formData);
+        await api.post('/appointments', formData);
       }
       clearForm();
       await refetchAppointments();
@@ -138,7 +133,7 @@ export default function AppointmentPage() {
   };
 
   const refetchAppointments = async () => {
-    const a = await axios.get(API_APPTS);
+    const a = await api.get('/appointments');
     setAppointments(a.data || []);
   };
 
@@ -147,7 +142,7 @@ export default function AppointmentPage() {
     setFormData({
       ownerId: appt.ownerId?._id || appt.ownerId,
       petId: appt.petId?._id || appt.petId,
-      date: appt.date,    // ISO from server
+      date: appt.date,
       time: appt.time,
       reason: appt.reason || '',
     });
@@ -157,7 +152,7 @@ export default function AppointmentPage() {
   const handleCancel = async (id) => {
     if (!window.confirm('Cancel this appointment?')) return;
     try {
-      await axios.patch(`${API_APPTS}/${id}/cancel`);
+      await api.patch(`/appointments/${id}/cancel`);
       await refetchAppointments();
     } catch (err) {
       console.error(err);
@@ -168,7 +163,7 @@ export default function AppointmentPage() {
   const handleDelete = async (id) => {
     if (!window.confirm('Delete permanently?')) return;
     try {
-      await axios.delete(`${API_APPTS}/${id}`);
+      await api.delete(`/appointments/${id}`);
       await refetchAppointments();
     } catch (err) {
       console.error(err);
@@ -176,22 +171,14 @@ export default function AppointmentPage() {
     }
   };
 
-  // prevent stacked popups — confirm once; if API ok then refresh silently
   const handleComplete = async (id) => {
     if (!window.confirm('Mark this appointment as completed?')) return;
-
     try {
-      await axios.patch(`${API_APPTS}/${id}/complete`);
+      await api.patch(`/appointments/${id}/complete`);
+      await refetchAppointments();
     } catch (err) {
       console.error('Complete API error:', err);
       alert(err?.response?.data?.message || 'Complete failed');
-      return;
-    }
-
-    try {
-      await refetchAppointments();
-    } catch (err) {
-      console.warn('Completed, refresh failed:', err);
     }
   };
 
@@ -208,7 +195,7 @@ export default function AppointmentPage() {
       style={{
         backgroundImage: "url('/paws2.png')",
         backgroundRepeat: 'repeat',
-        backgroundSize: 'cover',     // full screen cover
+        backgroundSize: 'cover',
       }}
     >
       <div
@@ -219,9 +206,7 @@ export default function AppointmentPage() {
 
       <div className="relative z-10">
         <div className="container-page">
-          {/* palette-only overrides for this page */}
           <style>{`
-            /* ---------- Card (form) : purple highlight ---------- */
             .card.card-purple,
             .card.card-purple .card-body {
               background: #a5b4fc;
@@ -230,10 +215,8 @@ export default function AppointmentPage() {
             }
             .card.card-purple .card-title,
             .card.card-purple label {
-              color: #111827; /* darker text for readability */
+              color: #111827;
             }
-
-            /* ---------- Table : soft-purple theme ---------- */
             .table-soft-purple thead th {
               background: #a5b4fc;
               color: #111827;
@@ -245,15 +228,11 @@ export default function AppointmentPage() {
             }
             .table-soft-purple tbody tr:nth-child(odd)  { background: #eef1ff; }
             .table-soft-purple tbody tr:nth-child(even) { background: #dde3ff; }
-
-            /* ---------- Buttons ---------- */
             .btn-yellow {
               background: #F3F58B;
               color: #111827;
             }
             .btn-yellow:hover { filter: brightness(0.95); }
-
-            /* Make sure success is clearly green */
             .btn-success {
               background: #22c55e;
               color: #fff;
@@ -281,7 +260,6 @@ export default function AppointmentPage() {
               <div className="card-title">{editingId ? 'Edit appointment' : 'New appointment'}</div>
 
               <form onSubmit={handleSubmit} className="form-grid">
-                {/* Owner */}
                 <div>
                   <label className="text-sm text-slate-600">Owner</label>
                   <select
@@ -294,7 +272,6 @@ export default function AppointmentPage() {
                   </select>
                 </div>
 
-                {/* Pet */}
                 <div>
                   <label className="text-sm text-slate-600">Pet</label>
                   <select
@@ -308,7 +285,6 @@ export default function AppointmentPage() {
                   </select>
                 </div>
 
-                {/* Date */}
                 <div>
                   <label className="text-sm text-slate-600">Date</label>
                   <div className="relative mt-1">
@@ -365,7 +341,6 @@ export default function AppointmentPage() {
                   </div>
                 </div>
 
-                {/* Time */}
                 <div>
                   <label className="text-sm text-slate-600">Time</label>
                   <input
@@ -376,7 +351,6 @@ export default function AppointmentPage() {
                   />
                 </div>
 
-                {/* Reason */}
                 <div className="sm:col-span-2">
                   <label className="text-sm text-slate-600">Reason</label>
                   <input
@@ -426,11 +400,9 @@ export default function AppointmentPage() {
                     </td>
                     <td>
                       <div className="flex flex-wrap gap-2">
-                        {/* only color change for Edit */}
                         <button className="btn btn-yellow" onClick={() => handleEdit(appt)}>Edit</button>
                         {appt.status === 'scheduled' && (
                           <>
-                            {/* ensure green complete button */}
                             <button className="btn btn-success" onClick={() => handleComplete(appt._id)}>
                               Complete
                             </button>
