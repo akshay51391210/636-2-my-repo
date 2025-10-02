@@ -38,7 +38,6 @@ export default function OwnerLogin() {
         const user = { ...(me?.data || {}), role: "owner" };
         login(user);
 
-        // owners มักไปหน้า owner-specific เช่น owner appointments
         nav("/owner-appointments");
       } else {
         setErrorMsg("Login response missing token");
@@ -60,7 +59,7 @@ export default function OwnerLogin() {
       className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
       style={{ backgroundColor: "#ffffff", fontFamily: "Tuffy, sans-serif" }}
     >
-      {/* Background pets — same look as Vet */}
+      {/* Background pets */}
       <img src="/Pet1.png" alt="" className="absolute" style={{ left: "75%", bottom: "10%", width: 460 }} />
       <img src="/Pet2.png" alt="" className="absolute" style={{ right: "70%", top: "-7%", width: 560 }} />
       <img src="/Pet3.png" alt="" className="absolute" style={{ bottom: "60%", left: "70%", width: 400 }} />

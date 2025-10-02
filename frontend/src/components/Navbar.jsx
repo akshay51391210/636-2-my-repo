@@ -1,4 +1,3 @@
-// frontend/src/components/Navbar.jsx
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -32,7 +31,7 @@ const Navbar = () => {
       {brand}
 
       <div className="flex items-center space-x-3">
-        {/* ยังไม่ล็อกอิน */}
+        {/* no login yet */}
         {!user && (
           <>
             <Link to="/admin-login" className={btnClass} style={btnStyle}>
@@ -50,10 +49,10 @@ const Navbar = () => {
           </>
         )}
 
-        {/* ล็อกอินแล้ว */}
+        {/* login */}
         {user && (
           <>
-            {/* OWNER: ให้โชว์เฉพาะเมนูที่กำหนด */}
+            {/* OWNER */}
             {user.role === 'owner' && (
               <>
                 <Link to="/history" className={btnClass} style={btnStyle}>
@@ -77,7 +76,7 @@ const Navbar = () => {
               </>
             )}
 
-            {/* ADMIN: เมนูเต็มเหมือนเดิม */}
+            {/* ADMIN */}
             {user.role === 'admin' && (
               <>
                 <Link to="/admin-invoice" className={btnClass} style={btnStyle}>
@@ -110,12 +109,24 @@ const Navbar = () => {
               </>
             )}
 
-            {/* VET: ใช้ชุดเมนูสำหรับ Vet (ถ้าต้องการเพิ่ม/ลด ปรับในบล็อคนี้) */}
+            {/* VET */}
             {user.role === 'vet' && (
               <>
                 <Link to="/vet-dashboard" className={btnClass} style={btnStyle}>
                   Vet Dashboard
                 </Link>
+
+                {/* Vet manus */}
+                <Link to="/admin-invoice" className={btnClass} style={btnStyle}>
+                  Invoice
+                </Link>
+                <Link to="/admin-prescription" className={btnClass} style={btnStyle}>
+                  Prescription
+                </Link>
+                <Link to="/history" className={btnClass} style={btnStyle}>
+                  History
+                </Link>
+
                 <Link to="/appointments" className={btnClass} style={btnStyle}>
                   Appointment
                 </Link>

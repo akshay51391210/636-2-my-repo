@@ -1,9 +1,8 @@
-// frontend/src/App.js
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import Login from './pages/Login';              // ถ้าใช้เป็น AdminLogin เดิม ให้เปลี่ยน import ตามไฟล์จริง
-import AdminLogin from './pages/AdminLogin';    // <— หน้าแอดมินที่มี secure code
-import OwnerLogin from './pages/OwnerLogin';    // <— หน้า owner แยก
+import Login from './pages/Login';              
+import AdminLogin from './pages/AdminLogin';    
+import OwnerLogin from './pages/OwnerLogin';    
 import Vetlogin from "./pages/Vetlogin";
 
 import Register from './pages/Register';

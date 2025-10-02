@@ -1,4 +1,3 @@
-// backend/server.js
 require('dotenv').config();
 require('./models/AppointmentModel');
 require('./models/NotificationModel');

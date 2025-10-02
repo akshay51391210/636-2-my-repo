@@ -1,11 +1,9 @@
-// frontend/src/context/AuthContext.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api/axios';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Safe load from localStorage
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('user');
@@ -23,8 +21,6 @@ export const AuthProvider = ({ children }) => {
 
     (async () => {
       try {
-        // ⚠️ FIX: ใช้ /auth/me แทน /api/auth/me 
-        // เพราะ api.js มี baseURL = '/api' อยู่แล้ว
         const me = await api.get('/auth/me');
         
         console.log('[AuthContext] Profile fetched:', me.data);

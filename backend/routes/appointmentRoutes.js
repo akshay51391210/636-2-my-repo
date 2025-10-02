@@ -157,7 +157,6 @@ router.post('/', protect, async (req, res) => {
 });
 
 /**
- * PATCH /appointments/:id
  * Owner can only update their own
  */
 router.patch('/:id', protect, async (req, res) => {
@@ -199,7 +198,6 @@ router.patch('/:id', protect, async (req, res) => {
 });
 
 /**
- * PATCH /appointments/:id/cancel
  * Owner can only cancel their own
  */
 router.patch('/:id/cancel', protect, async (req, res) => {
@@ -226,7 +224,6 @@ router.patch('/:id/cancel', protect, async (req, res) => {
 });
 
 /**
- * PATCH /appointments/:id/complete
  * Only admin/vet can complete
  */
 router.patch('/:id/complete', protect, async (req, res) => {
@@ -257,7 +254,6 @@ router.patch('/:id/complete', protect, async (req, res) => {
 });
 
 /**
- * DELETE /appointments/:id
  * Owner can only delete their own
  */
 router.delete('/:id', protect, async (req, res) => {
@@ -278,7 +274,6 @@ router.delete('/:id', protect, async (req, res) => {
 });
 
 /**
- * PUT /appointments/:id (full update)
  * Owner can only update their own
  */
 router.put('/:id', protect, async (req, res) => {

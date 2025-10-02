@@ -1,4 +1,3 @@
-// backend/models/ownerModel.js
 const mongoose = require('mongoose');
 
 const ownerSchema = new mongoose.Schema({
