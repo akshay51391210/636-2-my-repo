@@ -11,13 +11,13 @@ const http = require('http');
 const { Server } = require('socket.io');
 
 const connectDB = require('./config/db');
-const { protect } = require('./middleware/authMiddleware'); // Import protect
+const { protect } = require('./middleware/authMiddleware');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-// CORS
+// ================== Add New IP here ================== CORS ==================
 const ALLOW_LIST = new Set([
   'http://3.107.206.208',
   'http://3.107.206.208:3000',
@@ -56,45 +56,37 @@ function tryRequire(pathList) {
   return null;
 }
 
-const authRoutes = tryRequire(['./routes/auth', './routes/authRoutes']);
-const petRoutes = tryRequire(['./routes/pets', './routes/petRoutes']);
-const ownerRoutes = tryRequire(['./routes/owners', './routes/ownerRoutes']);
-const appointmentRoutes = tryRequire(['./routes/appointments', './routes/appointmentRoutes']);
-const historyRoutes = tryRequire(['./routes/history', './routes/historyRoutes']);
-const taskRoutes = tryRequire(['./routes/tasks', './routes/taskRoutes']);
-const adminUsersRoutes = tryRequire(['./routes/adminUsers']);
+// Route imports (support both filenames)
+const authRoutes          = tryRequire(['./routes/auth', './routes/authRoutes']);
+const petRoutes           = tryRequire(['./routes/pets', './routes/petRoutes']);
+const ownerRoutes         = tryRequire(['./routes/owners', './routes/ownerRoutes']);
+const appointmentRoutes   = tryRequire(['./routes/appointments', './routes/appointmentRoutes']);
+const historyRoutes       = tryRequire(['./routes/history', './routes/historyRoutes']);
+const taskRoutes          = tryRequire(['./routes/tasks', './routes/taskRoutes']);
+const prescriptionRoutes  = tryRequire(['./routes/prescriptions', './routes/prescriptionRoutes']);
+const adminUsersRoutes    = tryRequire(['./routes/adminUsers']);
 
 function mount(name, router, useProtect = false) {
   if (!router) return;
-  
   if (useProtect) {
-    // Protected routes
     app.use(`/${name}`, protect, router);
     app.use(`/api/${name}`, protect, router);
   } else {
-    // Public routes
     app.use(`/${name}`, router);
     app.use(`/api/${name}`, router);
   }
   console.log(`[route] /${name} & /api/${name} mounted ${useProtect ? '(protected)' : ''}`);
 }
 
-// Mount routes
-mount('auth', authRoutes); // Public (has own protect where needed)
-mount('pets', petRoutes); // Can be protected or handle inside route
-mount('owners', ownerRoutes);
-mount('appointments', appointmentRoutes, true); // Protected
-mount('history', historyRoutes, true); // Protected
-mount('tasks', taskRoutes);
-mount('admin/users', adminUsersRoutes);
-
-mount('auth', authRoutes); // Public (has own protect where needed)
-mount('pets', petRoutes, true); // Protected - changed from false to true
-mount('owners', ownerRoutes, true); // Protected - changed from false to true
-mount('appointments', appointmentRoutes, true); // Protected
-mount('history', historyRoutes, true); // Protected
-mount('tasks', taskRoutes);
-mount('admin/users', adminUsersRoutes);
+// Mount routes — avoid duplicates; choose final protection policy
+mount('auth', authRoutes);                 // public (route handles its own guards)
+mount('pets', petRoutes, true);            // protected
+mount('owners', ownerRoutes, true);        // protected
+mount('appointments', appointmentRoutes, true); // protected
+mount('history', historyRoutes, true);     // protected
+mount('tasks', taskRoutes);                 // public (adjust if needed)
+mount('prescriptions', prescriptionRoutes, true); // protected
+mount('admin/users', adminUsersRoutes, true);     // protected
 
 // Health
 app.get('/', (_req, res) => {
@@ -131,26 +123,22 @@ async function start() {
       socket.on('disconnect', () => console.log('socket disconnected:', socket.id));
     });
 
+    // event listeners
     require('./listeners/notificationListener')(bus, io);
 
     server.listen(PORT, '0.0.0.0', () => {
       console.log(`[http] Listening on 0.0.0.0:${PORT} (${NODE_ENV})`);
     });
 
-    process.on('SIGINT', () => {
-      console.log('\nSIGINT received. Closing gracefully...');
+    const shutdown = (sig) => {
+      console.log(`${sig} received. Closing gracefully...`);
       mongoose.connection.close(() => {
         console.log('[db] connection closed');
         server.close(() => process.exit(0));
       });
-    });
-    process.on('SIGTERM', () => {
-      console.log('SIGTERM received. Closing gracefully...');
-      mongoose.connection.close(() => {
-        console.log('[db] connection closed');
-        server.close(() => process.exit(0));
-      });
-    });
+    };
+    process.on('SIGINT', () => shutdown('SIGINT'));
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
   } catch (err) {
     console.error('[start] fatal:', err);
     process.exit(1);
