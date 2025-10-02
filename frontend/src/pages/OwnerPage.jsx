@@ -1,4 +1,3 @@
-// frontend/src/pages/OwnerPage.jsx
 import React, { useEffect, useCallback, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -18,10 +17,8 @@ export default function OwnerPage() {
   const [formData, setFormData] = useState({ name: '', phone: '' });
   const [editingId, setEditingId] = useState(null);
 
-  // stable helper
   const getToken = () => localStorage.getItem('token');
 
-  // ✅ ครอบด้วย useCallback เพื่อไม่ให้ useEffect ฟ้อง
   const fetchOwners = useCallback(async () => {
     try {
       const token = getToken();
@@ -33,11 +30,11 @@ export default function OwnerPage() {
       console.error(err);
       alert(err.response?.data?.message || 'Failed to fetch owners');
     }
-  }, []); // ไม่มี dependency ภายนอกที่เปลี่ยนแปลง
+  }, []);
 
   useEffect(() => {
     fetchOwners();
-  }, [fetchOwners]); // ✅ ระบุ dependency ให้ถูกต้อง
+  }, [fetchOwners]); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();

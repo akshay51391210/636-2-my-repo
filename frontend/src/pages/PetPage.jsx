@@ -1,4 +1,3 @@
-// frontend/src/pages/PetPage.jsx
 import React, { useEffect, useCallback, useState, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -63,7 +62,6 @@ export default function PetPage() {
 
   const isOwner = user?.role === 'owner';
 
-  // ✅ ครอบด้วย useCallback และอ่าน token ภายในเพื่อตัด dependency
   const fetchAll = useCallback(async () => {
     const token = localStorage.getItem('token');
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -73,11 +71,11 @@ export default function PetPage() {
     ]);
     setPets(p.data || []);
     setOwners(o.data || []);
-  }, []); // ไม่มี dependency ภายนอก
+  }, []); 
 
   useEffect(() => {
     fetchAll();
-  }, [fetchAll]); // ✅ ระบุ dependency ให้ถูกต้อง
+  }, [fetchAll]); 
 
   useEffect(() => {
     setDisplayDob(isoToDmy(formData.dob));

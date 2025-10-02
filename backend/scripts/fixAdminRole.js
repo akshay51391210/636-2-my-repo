@@ -35,7 +35,7 @@ async function main() {
   try {
     const user = await User.findOne({ email: targetEmail });
     if (!user) {
-      throw new Error(`ไม่พบผู้ใช้ email: ${targetEmail}`);
+      throw new Error(`Cannot fine user email: ${targetEmail}`);
     }
     user.role = targetRole;
     await user.save();

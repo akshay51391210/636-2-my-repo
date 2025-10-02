@@ -1,4 +1,3 @@
-// backend/models/AppointmentModel.js
 const mongoose = require('mongoose');
 const bus = require('../events/bus');
 

@@ -122,7 +122,7 @@ export default function VetLogin() {
             fontWeight: "bold",
           }}
         >
-          Vet login
+          Vet Sign in
         </h1>
 
         {errorMsg && (

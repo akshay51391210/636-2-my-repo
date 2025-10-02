@@ -34,7 +34,7 @@ const loginUser = async (req, res) => {
                 id: user.id, 
                 name: user.name, 
                 email: user.email,
-                role: user.role,  // ⚠️ เพิ่ม role
+                role: user.role, 
                 token: generateToken(user.id) 
             });
         } else {
@@ -52,12 +52,11 @@ const getProfile = async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      // ⚠️ CRITICAL: ต้องส่ง role กลับไปด้วย
       res.status(200).json({
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,          // ⚠️ เพิ่ม role
+        role: user.role,
         university: user.university,
         address: user.address,
       });
@@ -82,7 +81,7 @@ const updateUserProfile = async (req, res) => {
             id: updatedUser.id, 
             name: updatedUser.name, 
             email: updatedUser.email,
-            role: updatedUser.role,  // ⚠️ เพิ่ม role
+            role: updatedUser.role,
             university: updatedUser.university, 
             address: updatedUser.address, 
             token: generateToken(updatedUser.id) 

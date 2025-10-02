@@ -23,7 +23,6 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
-// POST create owner
 // Owner role can only create their own record
 router.post('/', protect, async (req, res) => {
   try {
@@ -50,7 +49,6 @@ router.post('/', protect, async (req, res) => {
   }
 });
 
-// PUT update owner
 // Owner can only update their own record
 router.put('/:id', protect, async (req, res) => {
   try {
@@ -79,7 +77,6 @@ router.put('/:id', protect, async (req, res) => {
   }
 });
 
-// DELETE owner
 // Owner cannot delete their own record (only admin can)
 router.delete('/:id', protect, async (req, res) => {
   try {

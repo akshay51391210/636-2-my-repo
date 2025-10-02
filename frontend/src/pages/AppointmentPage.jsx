@@ -264,13 +264,6 @@ export default function AppointmentPage() {
             <p className="text-slate-600">Book, edit, cancel appointments.</p>
           </div>
 
-          {/* Debug info */}
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
-            <p className="text-sm text-blue-800">
-              📊 Data loaded: {owners.length} owners, {pets.length} pets, {appointments.length} appointments
-            </p>
-          </div>
-
           {/* Validation errors */}
           {errors.length > 0 && (
             <div className="card mb-4">

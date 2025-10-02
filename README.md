@@ -1,6 +1,10 @@
 // Pet Clinic Management System, Devoloping from A1
 
 #########################################################
+User role change:
+cd backend
+node scripts/fixAdminRole.js --email example@gmail.com --role vet (admin/owner)
+
 
 What you need to install
 Prerequisites
