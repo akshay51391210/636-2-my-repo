@@ -1,37 +1,37 @@
-// frontend/src/api/axios.js
-import axios from 'axios';
-
-function resolveBaseURL() {
-  const fromEnv = process.env.REACT_APP_API_URL?.trim();
-  if (fromEnv) return fromEnv.replace(/\/+$/, '');
-
-  // dev local
-  if (typeof window !== 'undefined' &&
-      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-    return 'http://localhost:5001/api';
-  }
-
-  if (typeof window !== 'undefined') return `${window.location.origin}/api`;
-
-  return 'http://localhost:5001/api';
-}
+import axios from "axios";
 
 const api = axios.create({
-  baseURL: resolveBaseURL(),
-  headers: { 'Content-Type': 'application/json' },
-  
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5001/api",
   withCredentials: false,
 });
 
-api.interceptors.request.use((config) => {
-  const t = localStorage.getItem('token');
-  if (t) config.headers.Authorization = `Bearer ${t}`;
-  return config;
+api.interceptors.request.use((cfg) => {
+  try {
+    const auth = localStorage.getItem("auth");
+    const tokenFromAuth = auth ? JSON.parse(auth)?.token : null;
+    const token =
+      tokenFromAuth ||
+      localStorage.getItem("token") ||
+      localStorage.getItem("accessToken");
+
+    if (token) {
+      cfg.headers = cfg.headers || {};
+      cfg.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch (_) {
+    // ignore
+  }
+  return cfg;
 });
 
 api.interceptors.response.use(
   (res) => res,
-  (err) => Promise.reject(err)
+  (err) => {
+    if (err?.response?.status === 401) {
+      console.warn("[api] 401 Unauthorized");
+    }
+    return Promise.reject(err);
+  }
 );
 
 export default api;

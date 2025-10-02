@@ -1,87 +1,80 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable'; // must import this way
+// frontend/src/utils/generateInvoicePDF.js
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
-export default function generateInvoicePDF(invoice) {
-  // invoice: the appointment/invoice object from your DB
+/**
+ * สร้าง PDF ใบกำกับจากอ็อบเจ็กต์นัดหมาย (ต้องมี billing.{subtotal,taxRate,tax,discount,total})
+ * หัวเอกสาร: "Pet Clinic  Invoice"
+ */
+export default function generateInvoicePDF(appt) {
   const doc = new jsPDF();
 
-  // Title
+  // ===== Header =====
   doc.setFontSize(18);
-  doc.text('Pet Clinic Invoice', 14, 22);
+  doc.text("Pet Clinic  Invoice", 14, 16); // ตามที่ขอให้ขึ้นหัวใบ
 
-  // Clinic info
-  doc.setFontSize(10);
-  doc.text('Pet Clinic Management System', 14, 30);
+  // ===== ข้อมูลลูกค้า/รายการ =====
+  const ownerName = appt?.ownerId?.name ?? appt?.owner?.name ?? "-";
+  const ownerPhone = appt?.ownerId?.phone ?? appt?.owner?.phone ?? "-";
+  const petName = appt?.petId?.name ?? appt?.pet?.name ?? "-";
+  const date = appt?.date ?? "-";
+  const time = appt?.time ?? "-";
+  const status = appt?.status ?? "-";
 
-  // Owner / Pet Info
-  doc.setFontSize(12);
-  doc.text(`Owner: ${invoice.ownerId?.name || ''}`, 14, 40);
-  doc.text(`Pet: ${invoice.petId?.name || ''} (${invoice.petId?.type || ''})`, 14, 47);
-  doc.text(`Date: ${invoice.date || ''}`, 14, 54);
-  doc.text(`Time: ${invoice.time || ''}`, 14, 61);
+  // ===== ยอดเงินที่คำนวณจาก FE =====
+  const subtotal =
+    appt?.billing?.subtotal ??
+    appt?.amount ??
+    appt?.total ??
+    appt?.price ??
+    0;
+  const taxRate = appt?.billing?.taxRate ?? 0;
+  const tax = appt?.billing?.tax ?? +(subtotal * taxRate).toFixed(2);
+  const discount = appt?.billing?.discount ?? 0;
+  const grand = appt?.billing?.total ?? +(subtotal + tax - discount).toFixed(2);
 
-  // Prepare table data dynamically:
-  const bodyRows = [];
+  doc.setFontSize(11);
+  doc.text(`Owner: ${ownerName}`, 14, 26);
+  doc.text(`Phone: ${ownerPhone}`, 14, 32);
+  doc.text(`Pet: ${petName}`, 14, 38);
+  doc.text(`Date: ${date} ${time ? ` ${time}` : ""}`, 14, 44);
+  doc.text(`Status: ${status}`, 14, 50);
 
-  // Consultation fee
-  if (invoice.consultationFee) {
-    bodyRows.push(['Consultation', `$${invoice.consultationFee}`]);
-  }
-
-  // Medications
-  if (invoice.meds && invoice.meds.length > 0) {
-    invoice.meds.forEach(m => {
-      bodyRows.push([`Medicine: ${m.name}`, `$${m.price}`]);
-    });
-  }
-
-  // Procedures
-  if (invoice.procedures && invoice.procedures.length > 0) {
-    invoice.procedures.forEach(p => {
-      bodyRows.push([`Procedure: ${p.name}`, `$${p.price}`]);
-    });
-  }
-
-  // Subtotal
-  if (invoice.totalBeforeDiscount !== undefined) {
-    bodyRows.push(['Subtotal', `$${invoice.totalBeforeDiscount}`]);
-  }
-
-  // Discount
-  if (invoice.discountPercent) {
-    bodyRows.push([`Discount (${invoice.discountPercent}%)`, 
-      `-$${(invoice.totalBeforeDiscount * invoice.discountPercent / 100).toFixed(2)}`]);
-  }
-
-  // After Discount
-  if (invoice.totalAfterDiscount !== undefined) {
-    bodyRows.push(['After Discount', `$${invoice.totalAfterDiscount}`]);
-  }
-
-  // Tax
-  if (invoice.taxPercent) {
-    bodyRows.push([`Tax (${invoice.taxPercent}%)`, 
-      `$${(invoice.totalAfterDiscount * invoice.taxPercent / 100).toFixed(2)}`]);
-  }
-
-  // Grand Total
-  if (invoice.totalWithTax !== undefined) {
-    bodyRows.push(['Total', `$${invoice.totalWithTax}`]);
-  }
-
-  // Draw table
+  // ===== ตารางรายการ (อย่างง่าย 1 แถว) =====
   autoTable(doc, {
-    startY: 70,
-    head: [['Item', 'Amount']],
-    body: bodyRows
+    startY: 58,
+    head: [["Description", "Qty", "Unit Price", "Amount"]],
+    body: [
+      ["Clinic Service", "1", subtotal.toFixed(2), subtotal.toFixed(2)],
+    ],
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [99, 102, 241] }, // indigo-ish
+    theme: "grid",
   });
 
-  // Footer
-  const finalY = doc.lastAutoTable.finalY || 100;
-  doc.setFontSize(10);
-  doc.text('Thank you for visiting our clinic!', 14, finalY + 10);
+  // ===== ตารางสรุปยอด =====
+  const y = (doc.lastAutoTable?.finalY ?? 58) + 6;
+  autoTable(doc, {
+    startY: y,
+    head: [["Label", "Amount"]],
+    body: [
+      ["Subtotal", subtotal.toFixed(2)],
+      [`Tax (${(taxRate * 100).toFixed(0)}%)`, tax.toFixed(2)],
+      ["Discount", `-${discount.toFixed(2)}`],
+      ["Total", grand.toFixed(2)],
+    ],
+    styles: { fontSize: 11 },
+    headStyles: { fillColor: [226, 232, 240], textColor: [17, 24, 39] },
+    columnStyles: {
+      0: { cellWidth: 60 },
+      1: { cellWidth: 40, halign: "right" },
+    },
+    theme: "plain",
+  });
 
-  // Save PDF
-  const fileName = `invoice_${invoice.petId?.name || 'pet'}.pdf`;
-  doc.save(fileName);
+  // ===== บันทึกไฟล์ =====
+  const filename = `invoice_${(ownerName || "owner")
+    .toString()
+    .replace(/\s+/g, "_")}_${date || "date"}.pdf`;
+  doc.save(filename);
 }
