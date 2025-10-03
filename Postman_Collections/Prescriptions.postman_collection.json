@@ -1,0 +1,435 @@
+{
+	"info": {
+		"_postman_id": "bd455d49-e952-4a62-98a5-4109ff1b630e",
+		"name": "Prescriptions",
+		"description": "Prescriptions API: list, create, update, delete, complete, cancel. Uses {{base_url}}, {{ownerId}}, {{petId}}, and stores {{prescriptionId}} variable from create response.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48987575",
+		"_collection_link": "https://alek-karoli-2862410.postman.co/workspace/Alek-Karoli's-Workspace~ae93230a-a489-4b81-85c4-95faa74dc4c0/collection/48987575-bd455d49-e952-4a62-98a5-4109ff1b630e?action=share&source=collection_link&creator=48987575"
+	},
+	"item": [
+		{
+			"name": "List Prescriptions (GET /prescriptions)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Prescription list returned\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"type\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/prescriptions?ownerId={{ownerId}}&petId={{petId}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"prescriptions"
+					],
+					"query": [
+						{
+							"key": "ownerId",
+							"value": "{{ownerId}}",
+							"description": "Optional filter"
+						},
+						{
+							"key": "petId",
+							"value": "{{petId}}",
+							"description": "Optional filter"
+						}
+					]
+				},
+				"description": "Returns prescriptions populated with owner (name,email) and pet (name,type,weight)."
+			},
+			"response": []
+		},
+		{
+			"name": "Create Prescription (POST /prescriptions)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Save prescriptionId from response",
+							"let res = {};",
+							"try { res = pm.response.json(); } catch(e){}",
+							"if (res && res._id) {",
+							"  pm.collectionVariables.set('prescriptionId', res._id);",
+							"  console.log('Saved prescriptionId:', res._id);",
+							"} else {",
+							"  console.log('No _id found in create response:', res);",
+							"}",
+							"// Parse the response body",
+							"let response = pm.response.json();",
+							"// Successful status is 201",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"pm.test(\"Prescription Created!\", function () {",
+							"pm.expect(pm.response.text()).to.include(\"Bordetella\");",
+							"});",
+							"pm.test(\"Content-Type is present\", function () {",
+							"pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"pm.test(\"Response time is less than 200ms\", function",
+							"() {",
+							"pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"ownerId\": \"{{ownerId}}\",\n  \"petId\": \"{{petId}}\",\n  \"date\": \"2025-10-05\",\n  \"time\": \"14:30\",\n  \"species\": \"Canine\",\n  \"weight\": 12.5,\n  \"symptomsDiagnosis\": \"Cough, lethargy\",\n  \"reason\": \"Kennel cough suspected\",\n  \"diagnosis\": \"Bordetella\",\n  \"medication\": {\n    \"drugName\": \"Doxycycline\",\n    \"dosage\": \"100mg\",\n    \"frequency\": \"BID\",\n    \"duration\": \"10 days\",\n    \"notes\": \"Give with food\"\n  },\n  \"status\": \"Pending\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/prescriptions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"prescriptions"
+					]
+				},
+				"description": "Creates a prescription. If medication is partially filled but drugName empty, server sets drugName='N/A'."
+			},
+			"response": []
+		},
+		{
+			"name": "Update Prescription (PATCH /prescriptions/:id)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Prescription Updated!\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"Updated reason\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"reason\": \"Updated reason\",\n  \"medication\": {\n    \"dosage\": \"75 mg\",\n    \"notes\": \"Monitor GI side effects\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/prescriptions/{{prescriptionId}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"prescriptions",
+						"{{prescriptionId}}"
+					]
+				},
+				"description": "Updates fields of a prescription. Returns populated owner/pet."
+			},
+			"response": []
+		},
+		{
+			"name": "Complete Prescription (PATCH /prescriptions/:id/complete)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Prescription Completed!\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"Completed\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/prescriptions/{{prescriptionId}}/complete",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"prescriptions",
+						"{{prescriptionId}}",
+						"complete"
+					]
+				},
+				"description": "Marks the prescription status as 'Completed'."
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Prescription (PATCH /prescriptions/:id/cancel)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Prescription Completed!\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"Cancelled\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/prescriptions/{{prescriptionId}}/cancel",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"prescriptions",
+						"{{prescriptionId}}",
+						"cancel"
+					]
+				},
+				"description": "Marks the prescription status as 'Cancelled'."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Prescription (DELETE /prescriptions/:id)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse the response body\r",
+							"let response = pm.response.json();\r",
+							"// Successful status is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Prescription Deleted!\", function () {\r",
+							"pm.expect(pm.response.text()).to.include(\"true\");\r",
+							"});\r",
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"pm.test(\"Response time is less than 200ms\", function\r",
+							"() {\r",
+							"pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/prescriptions/{{prescriptionId}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"prescriptions",
+						"{{prescriptionId}}"
+					]
+				},
+				"description": "Deletes a prescription. Response: { ok: true }."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5001"
+		},
+		{
+			"key": "ownerId",
+			"value": "REPLACE_WITH_OWNER_ID"
+		},
+		{
+			"key": "petId",
+			"value": "REPLACE_WITH_PET_ID"
+		},
+		{
+			"key": "prescriptionId",
+			"value": ""
+		}
+	]
+}
