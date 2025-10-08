@@ -1,4 +1,3 @@
-// frontend/src/pages/Register.jsx
 import React, { useState } from "react";
 import api from "../api/axios";
 import { setToken } from "../utils/auth";
@@ -15,13 +14,10 @@ export default function Register() {
     setErrorMsg("");
     setLoading(true);
     try {
-      // ❗️สำคัญ: ไม่ต้องใส่ /api ซ้ำ ถ้า baseURL ใน axios ตั้งไว้แล้วเป็น /api
       const res = await api.post("/auth/register", form);
 
-      // ถ้า backend ส่ง token กลับมาก็เก็บไว้ได้
       if (res.data?.token) setToken(res.data.token);
 
-      // ไปหน้าโปรไฟล์ (หรือหน้าไหนที่ต้องการ)
       nav("/profile");
     } catch (err) {
       setErrorMsg(err?.response?.data?.message || "Registration failed");

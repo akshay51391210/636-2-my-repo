@@ -16,8 +16,8 @@ export default function AdminInvoice() {
         backgroundImage: "url('/paws.png')",  // from public/paws.png
         backgroundRepeat: "repeat",
         backgroundSize: "1800px 1200px",
-        backgroundColor: "rgba(255,255,255,0.85)", // semi-transparent overlay
-        backgroundBlendMode: "lighten", // blend bg + overlay
+        backgroundColor: "rgba(255,255,255,0.85)", 
+        backgroundBlendMode: "lighten", 
       }}
     >
       <main

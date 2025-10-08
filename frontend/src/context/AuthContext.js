@@ -1,11 +1,9 @@
-// frontend/src/context/AuthContext.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api/axios';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Safe load from localStorage
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('user');
@@ -23,11 +21,14 @@ export const AuthProvider = ({ children }) => {
 
     (async () => {
       try {
-        const me = await api.get('/api/auth/me'); // now exists on backend
+        const me = await api.get('/auth/me');
+        
+        console.log('[AuthContext] Profile fetched:', me.data);
+        
         setUser(me.data);
         localStorage.setItem('user', JSON.stringify(me.data));
       } catch (err) {
-        console.warn('Fetch profile failed:', err?.response?.data || err.message);
+        console.warn('[AuthContext] Fetch profile failed:', err?.response?.data || err.message);
         setUser(null);
         localStorage.removeItem('user');
         localStorage.removeItem('token');
@@ -36,12 +37,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (userData) => {
+    console.log('[AuthContext] Login:', userData);
     setUser(userData || null);
     if (userData) localStorage.setItem('user', JSON.stringify(userData));
     else localStorage.removeItem('user');
   };
 
   const logout = () => {
+    console.log('[AuthContext] Logout');
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');

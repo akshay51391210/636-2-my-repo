@@ -1,8 +1,4 @@
-/* ===============================
-   Global background (paw pattern)
-   - Replace the URL below with your image from the images folder.
-   - Example: url('/images/patterns/paws.png') or url('/assets/paws.svg')
-   =============================== */
+/* background */
 :root {
   --bg-image-url: url(/paws.png);
   --brand: #7266f0;       /* lavender/indigo for the top bar */
@@ -33,7 +29,7 @@
   inset: 0;
   background-image: var(--bg-image-url);
   background-repeat: repeat;
-  background-size: 300px 300px;  /* tune to your image */
+  background-size: 300px 300px;  /* tune image */
   opacity: 0.15;                 /* faint */
   pointer-events: none;
   z-index: 0;
@@ -126,7 +122,7 @@
   box-shadow: 0 10px 30px rgba(23, 37, 84, 0.08);
 }
 
-/* Top small tab that says "Invoice" (like the mockup) */
+/* Top small tab Invoice */
 .ai-card-tab {
   position: absolute;
   top: -14px;
@@ -211,6 +207,6 @@
 
 /* Small responsive tweaks */
 @media (max-width: 920px) {
-  .ai-menu { display: none; } /* keep layout simple on small screens */
+  .ai-menu { display: none; }
   .ai-content { margin-top: 16px; }
 }

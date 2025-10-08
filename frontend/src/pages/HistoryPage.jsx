@@ -1,4 +1,3 @@
-// frontend/src/pages/HistoryPage.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
@@ -117,7 +116,7 @@ export default function HistoryPage() {
       {/* Semi-transparent overlay (only affects background) */}
       <div className="absolute inset-0 bg-white" style={{ opacity: 0.9 }} aria-hidden="true" />
 
-      {/* Original page content (UNCHANGED) */}
+      {/* Original page conten */}
       <div className="relative z-10">
         <div className="container-page">
           <div className="mb-6">
