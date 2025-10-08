@@ -1,12 +1,8 @@
-// frontend/src/utils/generateInvoicePDF.js
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable'; // must import this way
 
-/**
- * สร้าง PDF ใบกำกับจากอ็อบเจ็กต์นัดหมาย (ต้องมี billing.{subtotal,taxRate,tax,discount,total})
- * หัวเอกสาร: "Pet Clinic  Invoice"
- */
-export default function generateInvoicePDF(appt) {
+export default function generateInvoicePDF(invoice) {
+  // invoice: the appointment/invoice object from your DB
   const doc = new jsPDF();
 
   // ===== Header =====
